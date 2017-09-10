@@ -18,7 +18,10 @@ defmodule OntagCore.Mixfile do
       docs: [
         main: "readme",
         extras: ["README.md"]
-      ]
+      ],
+
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [coveralls: :test]
     ]
   end
 
@@ -49,7 +52,8 @@ defmodule OntagCore.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:gettext, "~> 0.11"},
       {:cowboy, "~> 1.0"},
-      {:ex_doc, "~> 0.14", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.14", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.6", only: :test}
     ]
   end
 

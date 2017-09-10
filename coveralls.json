@@ -1,0 +1,14 @@
+{
+  "skip_files": [
+    "test",
+    "lib/ontag_core_web.ex",
+    "lib/ontag_core_web/channels/user_socket.ex",
+    "lib/ontag_core_web/endpoint.ex",
+    "lib/ontag_core_web/gettext.ex",
+    "lib/ontag_core_web/views/error_helpers.ex",
+    "lib/ontag_core_web/views/error_view.ex",
+    "lib/ontag_core.ex",
+    "lib/ontag_core/application.ex",
+    "lib/ontag_core/repo.ex"
+  ]
+}

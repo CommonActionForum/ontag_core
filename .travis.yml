@@ -1,0 +1,24 @@
+dist: trusty
+language: elixir
+elixir:
+  - 1.4.1
+
+otp_release:
+  - 18.3
+
+addons:
+  postgresql: '9.4'
+
+services:
+  - postgresql
+
+before_script:
+  - cp config/test.travis.exs config/test.exs
+  - psql -c 'create database travis_ci_test;' -U postgres
+  - mix do ecto.create, ecto.migrate
+
+env:
+  - MIX_ENV=test
+
+script:
+  - mix do deps.get, compile, coveralls.travis

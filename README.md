@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/CommonActionForum/ontag_core.svg?branch=master)](https://travis-ci.org/CommonActionForum/ontag_core)
+[![Coverage Status](https://coveralls.io/repos/github/CommonActionForum/ontag_core/badge.svg?branch=master)](https://coveralls.io/github/CommonActionForum/ontag_core?branch=master)
+
 # OntagCore
 
 The Core of Ontag, rewritten.
