@@ -1,0 +1,35 @@
+{
+  "name": "OntagCore",
+  "description": "The Core app of Ontag",
+  "repository": "https://github.com/commonactionforum/ontag_core",
+  "buildpacks": [
+    {
+      "url": "https://github.com/HashNuke/heroku-buildpack-elixir.git"
+    },
+    {
+      "url": "https://github.com/gjaldon/heroku-buildpack-phoenix-static.git"
+    }
+  ],
+  "addons": [
+    {
+      "plan": "heroku-postgresql",
+      "options": {
+        "version": "9.5"
+      }
+    }
+  ],
+  "scripts": {
+    "postdeploy": "POOL_SIZE=2 mix ecto.migrate"
+  },
+  "env": {
+    "POOL_SIZE": "18",
+    "SECRET_KEY_BASE": {
+      "description": "A secret key base",
+      "generator": "secret"
+    },
+    "APP_URL_HOST": {
+      "description": "Root URL of the APP, without the http(s) part",
+      "required": true
+    }
+  }
+}
