@@ -17,3 +17,5 @@ config :ontag_core, OntagCore.Repo,
   database: "ontag_core_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
+
+config :bcrypt_elixir, :log_rounds, 4
