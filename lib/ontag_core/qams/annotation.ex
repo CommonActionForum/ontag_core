@@ -3,12 +3,15 @@ defmodule OntagCore.QAMS.Annotation do
   import Ecto.Changeset
   alias OntagCore.QAMS.{Annotation,
                         Author,
-                        Tag}
+                        Tag,
+                        Answer,
+                        AnswerAnnotation}
 
   schema "annotations" do
     belongs_to :author, Author
     belongs_to :tag, Tag
     belongs_to :entry, OntagCore.CMS.Entry
+    many_to_many :answers, Answer, join_through: AnswerAnnotation
     field :target, :map
 
     timestamps()
