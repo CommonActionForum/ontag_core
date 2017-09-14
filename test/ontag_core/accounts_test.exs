@@ -1,6 +1,7 @@
 defmodule OntagCore.AccountsTest do
   use OntagCore.DataCase
   alias OntagCore.Accounts
+  alias OntagCore.Accounts.User
   @moduledoc """
   Test for `OntagCore.Accounts`
   """
@@ -25,7 +26,7 @@ defmodule OntagCore.AccountsTest do
       }
     }
 
-    assert {:ok, user} = Accounts.create_user(params)
+    assert {:ok, %User{} = user} = Accounts.create_user(params)
     assert user.username == "john_example"
   end
 
