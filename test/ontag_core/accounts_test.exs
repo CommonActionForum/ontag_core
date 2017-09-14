@@ -39,4 +39,31 @@ defmodule OntagCore.AccountsTest do
     assert {:error, changeset} = Accounts.create_user(params)
     assert %{username: ["has already been taken"]} = errors_on(changeset)
   end
+
+  test "Fail to create a user with a PasswordCredential (same email)" do
+    credential = %{
+      email: "john@example.com",
+      password: "1234"
+    }
+
+    params = %{
+      username: "john_example",
+      name: "John example",
+      password_credential: credential
+    }
+
+    params2 = %{
+      username: "maria_example",
+      name: "Maria example",
+      password_credential: credential
+    }
+
+    assert {:ok, _} = Accounts.create_user(params)
+    assert {:error, changeset} = Accounts.create_user(params2)
+    assert %{
+      password_credential: %{
+        email: ["has already been taken"]
+      }
+    } = errors_on(changeset)
+  end
 end
