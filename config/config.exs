@@ -22,6 +22,11 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+# Configure Guardian. Override secret_key with a valid hidden value
+config :ontag_core, OntagCore.Guardian,
+  issuer: "liqen_core",
+  secret_key: "VQ1QVNnBfpMcU4X97BeJ4v0zc24G+AoANoMiCGlT41YTUUSlC7jPG2E5Z1NTj9OH"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
