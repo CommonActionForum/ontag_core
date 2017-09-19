@@ -12,6 +12,8 @@ defmodule OntagCore.Repo.Migrations.CreateQams do
 
     create table(:tags) do
       add :title, :string
+      add :author_id, references(:qams_authors),
+        null: false
 
       timestamps()
     end
