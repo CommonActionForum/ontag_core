@@ -33,7 +33,7 @@ defmodule OntagCore.CMSTest do
     assert entry.title == "Hello World"
   end
 
-  test "Create an medium post entry" do
+  test "Create an external html entry" do
     user_params = %{
       username: "john_example",
       name: "John example"
@@ -46,7 +46,34 @@ defmodule OntagCore.CMSTest do
       title: "Hello World",
       entry_type: "external_html",
       external_html: %{
-        uri: "http://www.example.com"
+        uri: "http://example.com"
+      }
+    }
+
+    assert {:ok, entry} = CMS.create_entry(author, params)
+  end
+
+  test "Create an medium post entry" do
+    user_params = %{
+      username: "john_example",
+      name: "John example"
+    }
+
+    {:ok, user} = OntagCore.Accounts.create_user(user_params)
+    author = CMS.ensure_author_exists(user)
+
+    params = %{
+      title: "Hello World",
+      entry_type: "medium_post",
+      medium_post: %{
+        title: "Hello World",
+        uri: "http://www.example.com",
+        publishing_date: %DateTime{year: 2000, month: 2, day: 29, zone_abbr: "CET",
+                                   hour: 23, minute: 0, second: 7, microsecond: {0, 0},
+                                   utc_offset: 3600, std_offset: 0, time_zone: "Europe/Warsaw"},
+        license: "copyright",
+        tags: ["Example"],
+        copyright_cesion: true
       }
     }
 
