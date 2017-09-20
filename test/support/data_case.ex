@@ -22,6 +22,7 @@ defmodule OntagCore.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import OntagCore.DataCase
+      import OntagCore.DataHelpers
     end
   end
 
