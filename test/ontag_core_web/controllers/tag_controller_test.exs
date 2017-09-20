@@ -39,7 +39,7 @@ defmodule OntagCoreWeb.TagControllerTest do
 
   test "POST /tags with wrong parameters", %{valid_token: conn} do
     conn = post(conn, tag_path(build_conn(), :create, %{}))
-    assert json_response(conn, :bad_request)
+    assert json_response(conn, :unprocessable_entity)
   end
 
   test "POST /tags with right parameters", %{valid_token: conn} do

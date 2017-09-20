@@ -9,6 +9,24 @@ defmodule OntagCoreWeb.ErrorView do
     "Internal server error"
   end
 
+  def render("401.json", _assigns) do
+    %{
+      message: "Authentication required. Log in to perform this action"
+    }
+  end
+
+  def render("403.json", _assigns) do
+    %{
+      message: "You are not allowed to perform this action"
+    }
+  end
+
+  def render("404.json", _assigns) do
+    %{
+      message: "Resource not found"
+    }
+  end
+
   # In case no render clause matches or no
   # template is found, let's render it as 500
   def template_not_found(_template, assigns) do
