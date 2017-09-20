@@ -27,7 +27,7 @@ defmodule OntagCoreWeb.Router do
     resources "/entries", EntryController, only: [:create]
     resources "/tags", TagController, only: [:create]
     resources "/questions", QuestionController, only: [:create]
-    # resources "/annotations", AnnotationController, only: [:create]
+    resources "/annotations", AnnotationController, only: [:create]
     # resources "/answers", AnswerController, only: [:create]
   end
 end

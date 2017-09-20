@@ -97,8 +97,8 @@ defmodule OntagCore.QAMSTest do
     {:ok, _} = QAMS.create_question(qams_author, question_params)
 
     annotation_params = %{
-      tag: tag1.id,
-      entry: entry.id,
+      tag_id: tag1.id,
+      entry_id: entry.id,
       target: %{}
     }
     assert {:ok, _} = QAMS.create_annotation(qams_author, annotation_params)
@@ -126,8 +126,8 @@ defmodule OntagCore.QAMSTest do
     {:ok, question} = QAMS.create_question(qams_author, question_params)
 
     annotation_params = %{
-      tag: tag1.id,
-      entry: entry.id,
+      tag_id: tag1.id,
+      entry_id: entry.id,
       target: %{}
     }
     assert {:ok, a1} = QAMS.create_annotation(qams_author, annotation_params)

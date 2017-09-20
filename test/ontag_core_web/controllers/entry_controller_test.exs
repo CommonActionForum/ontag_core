@@ -1,7 +1,6 @@
 defmodule OntagCoreWeb.EntryControllerTest do
   use OntagCoreWeb.ConnCase
-  alias OntagCore.{CMS,
-                   Accounts,
+  alias OntagCore.{Accounts,
                    Guardian}
 
   test "POST /entries without a valid authorization header" do

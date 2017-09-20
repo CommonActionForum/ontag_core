@@ -1,7 +1,6 @@
 defmodule OntagCoreWeb.TagControllerTest do
   use OntagCoreWeb.ConnCase
-  alias OntagCore.{QAMS,
-                   Accounts,
+  alias OntagCore.{Accounts,
                    Guardian}
 
   test "POST /tags without a valid authorization header" do

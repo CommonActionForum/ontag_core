@@ -7,6 +7,8 @@ defmodule OntagCore.QAMS.AnnotationTest do
 
   test "Valid data on changeset" do
     params = %{
+      tag_id: 0,
+      entry_id: 0,
       target: %{
         type: "TextQuoteSelector"
       }
