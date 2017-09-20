@@ -77,22 +77,32 @@ defmodule OntagCore.QAMSTest do
     {:error, _} = QAMS.create_question(author, question_params, tags_params)
   end
 
-  #  test "Create an annotation" do
-  #    user_params = %{
-  #      username: "john_example",
-  #      name: "John example"
-  #    }
-  #
-  #    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-  #    author = QAMS.ensure_author_exists(user)
-  #
-  #    params = %{
-  #      target: %{
-  #        type: "type of the annotation"
-  #      }
-  #    }
-  #
-  #    assert {:ok, entry} = QAMS.create_annotation(author, params)
-  #    assert entry.title == "Hello World"
-  #  end
+  test "Create an annotation" do
+    user_params = %{
+      username: "john_example",
+      name: "John example"
+    }
+
+    entry_params = %{
+      title: "Example entry"
+    }
+
+    {:ok, user} = OntagCore.Accounts.create_user(user_params)
+    cms_author = OntagCore.CMS.ensure_author_exists(user)
+    {:ok, entry} = OntagCore.CMS.create_entry(cms_author, entry_params)
+    author = QAMS.ensure_author_exists(user)
+    tag_params = %{
+      title: "Hello World"
+    }
+
+    {:ok, tag} = QAMS.create_tag(author, tag_params)
+
+    params = %{
+      target: %{
+        type: "type of the annotation"
+      }
+    }
+
+    assert {:ok, _annotation} = QAMS.create_annotation(author, entry, tag, params)
+  end
 end
