@@ -17,11 +17,53 @@ defmodule OntagCore.QAMS do
   answers.
   """
 
+  @doc """
+  Creates a tag
+  """
   def create_tag(%Author{} = author, params) do
     %Tag{}
     |> Tag.changeset(params)
     |> put_change(:author_id, author.id)
     |> Repo.insert()
+  end
+
+  @doc """
+  Get a list of all tags
+  """
+  def list_tags do
+    Repo.all(Tag)
+  end
+
+  @doc """
+  Get one tag given its ID
+  """
+  def get_tag(id) do
+    case Repo.get(Tag, id) do
+      nil ->
+        {:error, :not_found}
+      tag ->
+        {:ok, tag}
+    end
+  end
+
+  @doc """
+  Deletes a tag
+  """
+  def delete_tag(id) do
+    with {:ok, tag} <- get_tag(id) do
+      Repo.delete(tag)
+    end
+  end
+
+  @doc """
+  Updates a tag
+  """
+  def update_tag(id, params) do
+    with {:ok, tag} <- get_tag(id) do
+      tag
+      |> Tag.changeset(params)
+      |> Repo.update()
+    end
   end
 
   @doc """

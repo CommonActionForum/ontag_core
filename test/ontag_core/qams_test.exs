@@ -32,6 +32,68 @@ defmodule OntagCore.QAMSTest do
     assert entry.title == "Hello World"
   end
 
+  test "Get a list of tags" do
+    assert [] == QAMS.list_tags()
+  end
+
+  test "Get a non-existent tag" do
+    assert {:error, :not_found} == QAMS.get_tag(0)
+  end
+
+  test "Get a tag" do
+    user_params = %{
+      username: "john_example",
+      name: "John example"
+    }
+
+    {:ok, user} = OntagCore.Accounts.create_user(user_params)
+    author = QAMS.ensure_author_exists(user)
+
+    params = %{
+      title: "Hello World"
+    }
+
+    {:ok, tag} = QAMS.create_tag(author, params)
+    assert {:ok, tag} == QAMS.get_tag(tag.id)
+  end
+
+  test "Delete a tag" do
+    user_params = %{
+      username: "john_example",
+      name: "John example"
+    }
+
+    {:ok, user} = OntagCore.Accounts.create_user(user_params)
+    author = QAMS.ensure_author_exists(user)
+
+    params = %{
+      title: "Hello World"
+    }
+
+    {:ok, tag} = QAMS.create_tag(author, params)
+    assert {:ok, %QAMS.Tag{}} = QAMS.delete_tag(tag.id)
+    assert {:error, :not_found} == QAMS.get_tag(tag.id)
+  end
+
+  test "Update a tag" do
+    user_params = %{
+      username: "john_example",
+      name: "John example"
+    }
+
+    {:ok, user} = OntagCore.Accounts.create_user(user_params)
+    author = QAMS.ensure_author_exists(user)
+
+    params = %{
+      title: "Hello World"
+    }
+
+    {:ok, tag} = QAMS.create_tag(author, params)
+    assert {:ok, %QAMS.Tag{}} = QAMS.update_tag(tag.id, %{title: "Goodbye World"})
+    assert {:ok, %{title: "Goodbye World"}} = QAMS.get_tag(tag.id)
+  end
+
+
   test "Create a question with valid tags" do
     user_params = %{
       username: "john_example",
