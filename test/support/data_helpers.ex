@@ -1,7 +1,8 @@
 defmodule OntagCore.DataHelpers do
   alias OntagCore.{Repo,
                    Accounts,
-                   CMS}
+                   CMS,
+                   QAMS}
 
   defp rand do
     Base.encode16(:crypto.strong_rand_bytes(8))
@@ -93,6 +94,57 @@ defmodule OntagCore.DataHelpers do
       %CMS.ExternalHTML{
         entry_id: entry_id,
         uri: "http://external-site.com/#{rand()}"
+      }
+    )
+  end
+
+  @doc """
+  Creates a valid `QAMS.Author`
+  """
+  def create_test_qams_author(user) do
+    Repo.insert!(
+      %QAMS.Author{
+        user_id: user.id
+      }
+    )
+  end
+
+  @doc """
+  Creates a valid `QAMS.Tag`
+  """
+  def create_test_tag(author) do
+    Repo.insert!(
+      %QAMS.Tag{
+        title: "Tag #{rand()}",
+        author_id: author.id
+      }
+    )
+  end
+
+  @doc """
+  Creates a valid `QAMS.Question`
+  """
+  def create_test_question(author) do
+    Repo.insert!(
+      %QAMS.Question{
+        title: "Question #{rand()}",
+        author_id: author.id
+      }
+    )
+  end
+
+  @doc """
+  Creates a valid `QAMS.Annotation`
+  """
+  def create_test_annotation(author, entry, tag) do
+    Repo.insert!(
+      %QAMS.Annotation{
+        author_id: author.id,
+        tag_id: tag.id,
+        entry_id: entry.id,
+        target: %{
+          type: "TextQuoteSelector"
+        }
       }
     )
   end
