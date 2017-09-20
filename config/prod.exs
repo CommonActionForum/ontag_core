@@ -34,9 +34,12 @@ config :ontag_core, OntagCore.Repo,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
   ssl: true
 
-
 # Do not print debug messages in production
 config :logger, level: :info
+
+config :my_app, MyApp.Guardian,
+  issuer: "liqen_core",
+  secret_key: System.get_env("GUARDIAN_SECRET_KEY")
 
 # ## SSL Support
 #

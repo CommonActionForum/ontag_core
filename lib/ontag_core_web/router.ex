@@ -9,9 +9,9 @@ defmodule OntagCoreWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  # pipeline :api do
-  #    plug :accepts, ["json"]
-  # end
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
 
   scope "/", OntagCoreWeb do
     pipe_through :browser # Use the default browser stack
@@ -20,7 +20,10 @@ defmodule OntagCoreWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", OntagCoreWeb do
-  #   pipe_through :api
-  # end
+  scope "/v1", OntagCoreWeb do
+    pipe_through :api
+
+    resources "/sessions", SessionController, only: [:create]
+    resources "/entries", EntryController, only: [:create]
+  end
 end
