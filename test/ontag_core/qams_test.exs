@@ -78,31 +78,50 @@ defmodule OntagCore.QAMSTest do
   end
 
   test "Create an annotation" do
+    # Steps
+    # User -> cms_author -> entry
+    #      -> qams_author -> tag -> question
+    # -> annotation -> answer
     user_params = %{
       username: "john_example",
       name: "John example"
     }
-
-    entry_params = %{
-      title: "Example entry"
-    }
-
     {:ok, user} = OntagCore.Accounts.create_user(user_params)
+
     cms_author = OntagCore.CMS.ensure_author_exists(user)
-    {:ok, entry} = OntagCore.CMS.create_entry(cms_author, entry_params)
-    author = QAMS.ensure_author_exists(user)
-    tag_params = %{
-      title: "Hello World"
+    qams_author = QAMS.ensure_author_exists(user)
+
+    {:ok, entry} = OntagCore.CMS.create_entry(cms_author, %{title: "Example entry"})
+    {:ok, tag1} = QAMS.create_tag(qams_author, %{title: "Tag 1"})
+    {:ok, tag2} = QAMS.create_tag(qams_author, %{title: "Tag 2"})
+    tag_params = [
+      %{tag_id: tag1.id, required: true},
+      %{tag_id: tag2.id, required: false}
+    ]
+    {:ok, _} = QAMS.create_question(qams_author, %{title: "Example question"}, tag_params)
+    assert {:ok, _} = QAMS.create_annotation(qams_author, entry, tag1, %{target: %{}})
+  end
+
+  test "Create an answer" do
+    user_params = %{
+      username: "john_example",
+      name: "John example"
     }
+    {:ok, user} = OntagCore.Accounts.create_user(user_params)
 
-    {:ok, tag} = QAMS.create_tag(author, tag_params)
+    cms_author = OntagCore.CMS.ensure_author_exists(user)
+    qams_author = QAMS.ensure_author_exists(user)
 
-    params = %{
-      target: %{
-        type: "type of the annotation"
-      }
-    }
-
-    assert {:ok, _annotation} = QAMS.create_annotation(author, entry, tag, params)
+    {:ok, entry} = OntagCore.CMS.create_entry(cms_author, %{title: "Example entry"})
+    {:ok, tag1} = QAMS.create_tag(qams_author, %{title: "Tag 1"})
+    {:ok, tag2} = QAMS.create_tag(qams_author, %{title: "Tag 2"})
+    tag_params = [
+      %{tag_id: tag1.id, required: true},
+      %{tag_id: tag2.id, required: false}
+    ]
+    {:ok, question} = QAMS.create_question(qams_author, %{title: "Example question"}, tag_params)
+    assert {:ok, a1} = QAMS.create_annotation(qams_author, entry, tag1, %{target: %{}})
+    assert {:ok, a2} = QAMS.create_annotation(qams_author, entry, tag2, %{target: %{}})
+    assert {:ok, _} = QAMS.create_answer(qams_author, question, [a1, a2])
   end
 end

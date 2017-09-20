@@ -51,6 +51,22 @@ defmodule OntagCore.Repo.Migrations.CreateQams do
       timestamps()
     end
 
+    create table(:answers) do
+      add :question_id, references(:questions),
+        null: false
+
+      timestamps()
+    end
+
+    create table(:answers_annotations) do
+      add :answer_id, references(:answers),
+        null: false
+      add :annotation_id, references(:annotations),
+        null: false
+
+      timestamps()
+    end
+
     create unique_index(:qams_authors, [:user_id])
     create index(:questions, [:author_id])
     create index(:questions_tags, [:author_id])

@@ -6,7 +6,9 @@ defmodule OntagCore.QAMS do
                         Question,
                         Author,
                         Annotation,
-                        QuestionTag}
+                        QuestionTag,
+                        Answer,
+                        AnswerAnnotation}
   alias OntagCore.Accounts
   alias Ecto.Multi
 
@@ -77,6 +79,50 @@ defmodule OntagCore.QAMS do
     |> put_change(:author_id, author.id)
     |> put_change(:tag_id, tag.id)
     |> Repo.insert()
+  end
+
+  def create_answer(%Author{} = author, question, annotations) do
+    Repo.transaction(fn ->
+      result =
+        %Answer{}
+        |> change()
+        |> put_change(:question_id, question.id)
+        |> Repo.insert()
+        |> add_annotations(author, annotations)
+
+      case result do
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+
+        {:ok, answer, annotations} ->
+          Map.put(answer, :annotations, annotations)
+      end
+    end)
+  end
+
+  defp add_annotations({:error, changeset}, _, _), do: {:error, changeset}
+  defp add_annotations({:ok, answer}, author, annotations) do
+    annotations
+    |> Enum.map(fn ann -> %{annotation_id: ann.id,
+                            answer_id: answer.id} end)
+    |> Enum.map(fn params ->
+                  AnswerAnnotation.changeset(%AnswerAnnotation{}, params) end)
+    |> Enum.map(fn ch -> put_change(ch, :author_id, author.id) end)
+    |> Enum.reduce({:ok, answer, []}, &add_annotation/2)
+  end
+
+  defp add_annotation(_ch, {:error, changeset}), do: {:error, changeset}
+  defp add_annotation(ch = %{valid?: valid}, {:ok, _, _}) when not valid do
+    {:error, ch}
+  end
+  defp add_annotation(ch, {:ok, answer, annotations}) do
+    case Repo.insert(ch) do
+      {:ok, annotation} ->
+        {:ok, answer, [annotation | annotations]}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def ensure_author_exists(%Accounts.User{} = user) do
