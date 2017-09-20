@@ -93,7 +93,6 @@ defmodule OntagCore.QAMSTest do
     assert {:ok, %{title: "Goodbye World"}} = QAMS.get_tag(tag.id)
   end
 
-
   test "Create a question with valid tags" do
     user_params = %{
       username: "john_example",
@@ -131,6 +130,53 @@ defmodule OntagCore.QAMSTest do
     }
 
     {:error, _} = QAMS.create_question(author, question_params)
+  end
+
+  test "Get a list of all questions" do
+    assert [] == QAMS.list_questions
+  end
+
+  test "Get a question" do
+    user_params = %{
+      username: "john_example",
+      name: "John example"
+    }
+
+    {:ok, user} = OntagCore.Accounts.create_user(user_params)
+    author = QAMS.ensure_author_exists(user)
+    {:ok, tag1} = QAMS.create_tag(author, %{title: "Tag 1"})
+    {:ok, tag2} = QAMS.create_tag(author, %{title: "Tag 2"})
+
+    question_params = %{
+      title: "Hello World",
+      required_tags: [tag1.id],
+      optional_tags: [tag2.id]
+    }
+
+    assert {:ok, question} = QAMS.create_question(author, question_params)
+    assert {:ok, %QAMS.Question{}} = QAMS.get_question(question.id)
+  end
+
+  test "Delete a question" do
+    user_params = %{
+      username: "john_example",
+      name: "John example"
+    }
+
+    {:ok, user} = OntagCore.Accounts.create_user(user_params)
+    author = QAMS.ensure_author_exists(user)
+    {:ok, tag1} = QAMS.create_tag(author, %{title: "Tag 1"})
+    {:ok, tag2} = QAMS.create_tag(author, %{title: "Tag 2"})
+
+    question_params = %{
+      title: "Hello World",
+      required_tags: [tag1.id],
+      optional_tags: [tag2.id]
+    }
+
+    assert {:ok, question} = QAMS.create_question(author, question_params)
+    assert {:ok, %QAMS.Question{}} = QAMS.delete_question(question.id)
+    assert {:error, :not_found} = QAMS.get_question(question.id)
   end
 
   test "Create an annotation" do

@@ -124,6 +124,36 @@ defmodule OntagCore.QAMS do
     end
   end
 
+  @doc """
+  Gets a list of all questions
+  """
+  def list_questions do
+    Repo.all(Question)
+  end
+
+  @doc """
+  Get one question given its ID
+  """
+  def get_question(id) do
+    case Repo.get(Question, id) do
+      nil ->
+        {:error, :not_found}
+      question ->
+        question = Repo.preload(question, :tags)
+        {:ok, question}
+    end
+  end
+
+  @doc """
+  Deletes a question
+  """
+  def delete_question(id) do
+    with {:ok, question} <- get_question(id) do
+      Repo.delete(question)
+    end
+  end
+
+
   def create_annotation(%Author{} = author, params) do
     %Annotation{}
     |> Annotation.changeset(params)
