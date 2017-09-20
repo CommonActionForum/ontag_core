@@ -44,15 +44,12 @@ defmodule OntagCore.QAMSTest do
     {:ok, tag2} = QAMS.create_tag(author, %{title: "Tag 2"})
 
     question_params = %{
-      title: "Hello World"
+      title: "Hello World",
+      required_tags: [tag1.id],
+      optional_tags: [tag2.id]
     }
 
-    tags_params = [
-      %{tag_id: tag1.id, required: true},
-      %{tag_id: tag2.id, required: false}
-    ]
-
-    assert {:ok, question} = QAMS.create_question(author, question_params, tags_params)
+    assert {:ok, question} = QAMS.create_question(author, question_params)
     assert question.title == "Hello World"
   end
 
@@ -66,15 +63,12 @@ defmodule OntagCore.QAMSTest do
     author = QAMS.ensure_author_exists(user)
 
     question_params = %{
-      title: "Hello World"
+      title: "Hello World",
+      required_tags: [],
+      optional_tags: [1, 0]
     }
 
-    tags_params = [
-      %{tag_id: 1, required: true},
-      %{tag_id: 0, required: false}
-    ]
-
-    {:error, _} = QAMS.create_question(author, question_params, tags_params)
+    {:error, _} = QAMS.create_question(author, question_params)
   end
 
   test "Create an annotation" do

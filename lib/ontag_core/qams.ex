@@ -27,15 +27,18 @@ defmodule OntagCore.QAMS do
   @doc """
   Creates a question
   """
-  def create_question(%Author{} = author, question_params, tags_params) do
-    # Changesets
+  def create_question(%Author{} = author, params) do
     Repo.transaction(fn ->
+      ch = Question.changeset(%Question{}, params)
+
+      required_tags = get_change(ch, :required_tags, [])
+      optional_tags = get_change(ch, :optional_tags, [])
+
       result =
-        %Question{}
-        |> Question.changeset(question_params)
+        ch
         |> put_change(:author_id, author.id)
         |> Repo.insert()
-        |> add_tags(author, tags_params)
+        |> add_tags(author, required_tags, optional_tags)
 
       case result do
         {:error, changeset} ->
@@ -47,12 +50,19 @@ defmodule OntagCore.QAMS do
     end)
   end
 
-  defp add_tags({:error, changeset}, _, _), do: {:error, changeset}
-  defp add_tags({:ok, question}, author, tags) do
+  defp add_tags({:error, changeset}, _, _, _), do: {:error, changeset}
+  defp add_tags({:ok, question}, author, required_tags, optional_tags) do
+    rt =
+      required_tags
+      |> Enum.map(fn tag -> %{question_id: question.id, tag_id: tag, required: true} end)
+
+    ot =
+      optional_tags
+      |> Enum.map(fn tag -> %{question_id: question.id, tag_id: tag, required: false} end)
+
+    tags = Enum.concat(rt, ot)
+
     tags
-    |> Enum.map(fn tag -> %{question_id: question.id,
-                            tag_id: tag.tag_id,
-                            required: tag.required} end)
     |> Enum.map(fn params -> QuestionTag.changeset(%QuestionTag{}, params) end)
     |> Enum.map(fn ch -> put_change(ch, :author_id, author.id) end)
     |> Enum.reduce({:ok, question, []}, &add_tag/2)
