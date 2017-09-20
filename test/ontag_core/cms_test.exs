@@ -1,7 +1,6 @@
 defmodule OntagCore.CMSTest do
   use OntagCore.DataCase
   alias OntagCore.CMS
-  alias OntagCore.CMS.Entry
 
   test "Ensure that an author exists" do
     params = %{
