@@ -50,7 +50,7 @@ defmodule OntagCore.CMSTest do
       }
     }
 
-    assert {:ok, entry} = CMS.create_entry(author, params)
+    assert {:ok, _} = CMS.create_entry(author, params)
   end
 
   test "Create an medium post entry" do
@@ -77,6 +77,6 @@ defmodule OntagCore.CMSTest do
       }
     }
 
-    assert {:ok, entry} = CMS.create_entry(author, params)
+    assert {:ok, _} = CMS.create_entry(author, params)
   end
 end
