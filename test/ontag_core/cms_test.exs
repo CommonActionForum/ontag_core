@@ -4,9 +4,14 @@ defmodule OntagCore.CMSTest do
 
   setup do
     user = create_test_user()
-    author = CMS.ensure_author_exists(user)
+    author = create_test_cms_author()
 
-    {:ok, %{user: user, author: author}}
+    map = %{
+      user: user,
+      author: author
+    }
+
+    {:ok, map}
   end
 
   test "Ensure that an author exists", %{user: user} do
