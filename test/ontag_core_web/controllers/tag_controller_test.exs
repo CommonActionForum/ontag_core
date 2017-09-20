@@ -44,4 +44,28 @@ defmodule OntagCoreWeb.TagControllerTest do
 
     assert json_response(conn, :created)
   end
+
+  test "GET /tags" do
+    conn =
+      build_conn()
+      |> get(tag_path(build_conn(), :index))
+
+    assert json_response(conn, :ok)
+  end
+
+  test "GET /tags/:id with non-existent id" do
+    conn =
+      build_conn()
+      |> get(tag_path(build_conn(), :show, 0))
+
+    assert json_response(conn, :not_found)
+  end
+
+  test "DELETE /tags/:id with non-existent id" do
+    conn =
+      build_conn()
+      |> delete(tag_path(build_conn(), :delete, 0))
+
+    assert json_response(conn, :not_found)
+  end
 end
