@@ -89,12 +89,12 @@ defmodule OntagCore.QAMS do
     |> Repo.insert()
   end
 
-  def create_answer(%Author{} = author, question, annotations) do
+  def create_answer(%Author{} = author, %{question_id: question_id, annotations: annotations}) do
     Repo.transaction(fn ->
       result =
-        %Answer{}
+        %Answer{question_id: question_id}
         |> change()
-        |> put_change(:question_id, question.id)
+        |> cast(%{question_id: question_id}, [:question_id])
         |> Repo.insert()
         |> add_annotations(author, annotations)
 
@@ -107,14 +107,17 @@ defmodule OntagCore.QAMS do
       end
     end)
   end
+  def create_answer(%Author{} = author, %{"question_id" => question_id, "annotations" => annotations}) do
+    create_answer(author, %{question_id: question_id, annotations: annotations})
+  end
+  def create_answer(_, _), do: {:error, :bad_request}
 
   defp add_annotations({:error, changeset}, _, _), do: {:error, changeset}
   defp add_annotations({:ok, answer}, author, annotations) do
     annotations
-    |> Enum.map(fn ann -> %{annotation_id: ann.id,
+    |> Enum.map(fn ann -> %{annotation_id: ann,
                             answer_id: answer.id} end)
-    |> Enum.map(fn params ->
-                  AnswerAnnotation.changeset(%AnswerAnnotation{}, params) end)
+    |> Enum.map(fn params -> AnswerAnnotation.changeset(%AnswerAnnotation{}, params) end)
     |> Enum.map(fn ch -> put_change(ch, :author_id, author.id) end)
     |> Enum.reduce({:ok, answer, []}, &add_annotation/2)
   end

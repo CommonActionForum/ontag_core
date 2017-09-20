@@ -132,6 +132,11 @@ defmodule OntagCore.QAMSTest do
     }
     assert {:ok, a1} = QAMS.create_annotation(qams_author, annotation_params)
     assert {:ok, a2} = QAMS.create_annotation(qams_author, annotation_params)
-    assert {:ok, _} = QAMS.create_answer(qams_author, question, [a1, a2])
+
+    answer_params = %{
+      question_id: question.id,
+      annotations: [a1.id, a2.id]
+    }
+    assert {:ok, _} = QAMS.create_answer(qams_author, answer_params)
   end
 end
