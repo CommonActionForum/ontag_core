@@ -19,5 +19,7 @@ defmodule OntagCore.QAMS.QuestionTag do
     tag
     |> cast(attrs, [:question_id, :tag_id, :required])
     |> validate_required([:question_id, :tag_id, :required])
+    |> foreign_key_constraint(:question_id)
+    |> foreign_key_constraint(:tag_id)
   end
 end

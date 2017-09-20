@@ -5,8 +5,10 @@ defmodule OntagCore.QAMS do
   alias OntagCore.QAMS.{Tag,
                         Question,
                         Author,
-                        Annotation}
+                        Annotation,
+                        QuestionTag}
   alias OntagCore.Accounts
+  alias Ecto.Multi
 
   @moduledoc """
   Questions and Answers Manager System. Create questions, annotations and
@@ -23,11 +25,49 @@ defmodule OntagCore.QAMS do
   @doc """
   Creates a question
   """
-  def create_question(%Author{} = author, params) do
-    %Question{}
-    |> Question.changeset(params)
-    |> put_change(:author_id, author.id)
-    |> Repo.insert()
+  def create_question(%Author{} = author, question_params, tags_params) do
+    # Changesets
+    Repo.transaction(fn ->
+      result =
+        %Question{}
+        |> Question.changeset(question_params)
+        |> put_change(:author_id, author.id)
+        |> Repo.insert()
+        |> add_tags(author, tags_params)
+
+      case result do
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+
+        {:ok, question, tags} ->
+          Map.put(question, :tags, tags)
+      end
+    end)
+  end
+
+  defp add_tags({:error, changeset}, _, _), do: {:error, changeset}
+  defp add_tags({:ok, question}, author, tags) do
+    tags
+    |> Enum.map(fn tag -> %{question_id: question.id,
+                            tag_id: tag.tag_id,
+                            required: tag.required} end)
+    |> Enum.map(fn params -> QuestionTag.changeset(%QuestionTag{}, params) end)
+    |> Enum.map(fn ch -> put_change(ch, :author_id, author.id) end)
+    |> Enum.reduce({:ok, question, []}, &add_tag/2)
+  end
+
+  defp add_tag(_changeset, {:error, changeset}), do: {:error, changeset}
+  defp add_tag(changeset = %{valid?: valid}, {:ok, _, _}) when not valid do
+    {:error, changeset}
+  end
+  defp add_tag(changeset, {:ok, question, tags}) do
+    case Repo.insert(changeset) do
+      {:ok, tag} ->
+        {:ok, question, [tag | tags]}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def create_annotation(%Author{} = author, params) do
