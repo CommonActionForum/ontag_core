@@ -20,7 +20,7 @@ defmodule OntagCore.CMS.MediumPost do
     casted_attrs = [:title, :uri, :publishing_date, :license, :tags,
                     :copyright_cesion]
 
-    required = [:title, :uri, :publishing_date, :tags, :copyright_cesion]
+    required = [:title, :uri, :tags, :copyright_cesion]
     post
     |> cast(attrs, casted_attrs)
     |> validate_required(required)

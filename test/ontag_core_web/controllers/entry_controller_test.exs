@@ -37,10 +37,22 @@ defmodule OntagCoreWeb.EntryControllerTest do
     {:ok, user} = Accounts.create_user(%{username: "john"})
     {:ok, token, _} = Guardian.encode_and_sign(user)
 
+    params = %{
+      title: "example",
+      entry_type: "medium_post",
+      medium_post: %{
+        title: "example",
+        uri: "http://example.com",
+        license: "copyright",
+        tags: ["some"],
+        copyright_cesion: true
+      }
+    }
+
     conn =
       build_conn()
       |> put_req_header("authorization", "Bearer #{token}")
-      |> post(entry_path(build_conn(), :create, %{title: "example"}))
+      |> post(entry_path(build_conn(), :create, params))
 
     assert json_response(conn, :created)
   end
