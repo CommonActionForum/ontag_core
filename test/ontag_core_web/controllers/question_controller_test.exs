@@ -39,7 +39,7 @@ defmodule OntagCoreWeb.QuestionControllerTest do
 
   test "POST /questions with wrong parameters", %{valid_token: conn} do
     conn = post(conn, question_path(build_conn(), :create, %{}))
-    assert json_response(conn, :bad_request)
+    assert json_response(conn, :unprocessable_entity)
   end
 
   test "POST /questions with right parameters", %{valid_token: conn} do
