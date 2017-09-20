@@ -157,28 +157,6 @@ defmodule OntagCore.QAMSTest do
     assert {:ok, %QAMS.Question{}} = QAMS.get_question(question.id)
   end
 
-  test "Delete a question" do
-    user_params = %{
-      username: "john_example",
-      name: "John example"
-    }
-
-    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-    author = QAMS.ensure_author_exists(user)
-    {:ok, tag1} = QAMS.create_tag(author, %{title: "Tag 1"})
-    {:ok, tag2} = QAMS.create_tag(author, %{title: "Tag 2"})
-
-    question_params = %{
-      title: "Hello World",
-      required_tags: [tag1.id],
-      optional_tags: [tag2.id]
-    }
-
-    assert {:ok, question} = QAMS.create_question(author, question_params)
-    assert {:ok, %QAMS.Question{}} = QAMS.delete_question(question.id)
-    assert {:error, :not_found} = QAMS.get_question(question.id)
-  end
-
   test "Create an annotation" do
     # Steps
     # User -> cms_author -> entry
