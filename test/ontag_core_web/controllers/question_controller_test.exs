@@ -50,4 +50,20 @@ defmodule OntagCoreWeb.QuestionControllerTest do
 
     assert json_response(conn, :created)
   end
+
+  test "GET /questions" do
+    conn =
+      build_conn()
+      |> get(question_path(build_conn(), :index))
+
+    assert json_response(conn, :ok)
+  end
+
+  test "GET /tags/:id with non-existent id" do
+    conn =
+      build_conn()
+      |> get(question_path(build_conn(), :show, 0))
+
+    assert json_response(conn, :not_found)
+  end
 end

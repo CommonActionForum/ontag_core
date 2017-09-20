@@ -2,7 +2,7 @@ defmodule OntagCoreWeb.QuestionController do
   use OntagCoreWeb, :controller
   alias OntagCore.QAMS
 
-  plug :put_user_from_token
+  plug :put_user_from_token when action in [:create]
 
   def create(conn, params) do
     result =
@@ -19,6 +19,30 @@ defmodule OntagCoreWeb.QuestionController do
         conn
         |> put_status(:bad_request)
         |> json(%{message: "Something go wrong"})
+    end
+  end
+
+  def index(conn, _) do
+    questions =
+      QAMS.list_tags()
+      |> Enum.map(fn question -> %{id: question.id, title: question.title} end)
+
+    conn
+    |> put_status(:ok)
+    |> json(questions)
+  end
+
+  def show(conn, %{"id" => id}) do
+    case QAMS.get_question(id) do
+      {:ok, question} ->
+        conn
+        |> put_status(:ok)
+        |> json(%{id: question.id, title: question.title})
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{message: "Resource not found"})
     end
   end
 
