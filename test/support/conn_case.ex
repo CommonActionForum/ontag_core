@@ -23,6 +23,7 @@ defmodule OntagCoreWeb.ConnCase do
 
       # The default endpoint for testing
       @endpoint OntagCoreWeb.Endpoint
+      import OntagCore.DataHelpers
     end
   end
 
