@@ -82,12 +82,12 @@ defmodule OntagCore.QAMS do
     end
   end
 
-  def create_annotation(%Author{} = author, entry, tag, params) do
+  def create_annotation(%Author{} = author, %{tag: tag, entry: entry} = params) do
     %Annotation{}
     |> Annotation.changeset(params)
-    |> put_change(:entry_id, entry.id)
+    |> put_change(:entry_id, entry)
+    |> put_change(:tag_id, tag)
     |> put_change(:author_id, author.id)
-    |> put_change(:tag_id, tag.id)
     |> Repo.insert()
   end
 
