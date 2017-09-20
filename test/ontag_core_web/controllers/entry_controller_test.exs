@@ -30,7 +30,7 @@ defmodule OntagCoreWeb.EntryControllerTest do
       |> put_req_header("authorization", "Bearer #{token}")
       |> post(entry_path(build_conn(), :create, %{}))
 
-    assert json_response(conn, :bad_request)
+    assert json_response(conn, :unprocessable_entity)
   end
 
   test "POST /entries with right parameters" do
