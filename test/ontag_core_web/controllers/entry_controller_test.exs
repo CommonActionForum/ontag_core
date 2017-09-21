@@ -18,10 +18,14 @@ defmodule OntagCoreWeb.EntryControllerTest do
       build_conn()
       |> put_req_header("authorization", "Bearer #{token}")
 
+    author = create_test_cms_author(user)
+    entry = create_test_entry(author)
+
     world = %{
       wrong_header: wrong_header,
       wrong_token: wrong_token,
-      valid_token: valid_token
+      valid_token: valid_token,
+      entry: entry
     }
 
     {:ok, world}
@@ -47,5 +51,30 @@ defmodule OntagCoreWeb.EntryControllerTest do
 
     conn = post(conn, entry_path(build_conn(), :create, params))
     assert json_response(conn, :created)
+  end
+
+  test "GET /entries" do
+    conn = get(build_conn(), entry_path(build_conn(), :index, %{}))
+    assert json_response(conn, :ok)
+  end
+
+  test "GET /entries/:id with an existing entry", %{entry: entry} do
+    conn = get(build_conn(), entry_path(build_conn(), :show, entry.id))
+    assert json_response(conn, :ok)
+  end
+
+  test "GET /entries/:id with a non-existing entry", %{} do
+    conn = get(build_conn(), entry_path(build_conn(), :show, 0))
+    assert json_response(conn, :not_found)
+  end
+
+  test "DELETE /entries/:id with an existing entry", %{entry: entry} do
+    conn = delete(build_conn(), entry_path(build_conn(), :delete, entry.id))
+    assert json_response(conn, :ok)
+  end
+
+  test "DELETE /entries/:id with a non-existing entry", %{} do
+    conn = delete(build_conn(), entry_path(build_conn(), :delete, 0))
+    assert json_response(conn, :not_found)
   end
 end

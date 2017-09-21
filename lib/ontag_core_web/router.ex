@@ -24,7 +24,7 @@ defmodule OntagCoreWeb.Router do
     pipe_through :api
 
     resources "/sessions", SessionController, only: [:create]
-    resources "/entries", EntryController, only: [:create]
+    resources "/entries", EntryController, only: [:create, :index, :show, :delete]
     resources "/tags", TagController, only: [:create, :index, :show, :delete, :update]
     resources "/questions", QuestionController, only: [:create, :index, :show]
     resources "/annotations", AnnotationController, only: [:create]
