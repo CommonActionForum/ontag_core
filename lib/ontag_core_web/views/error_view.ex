@@ -9,6 +9,12 @@ defmodule OntagCoreWeb.ErrorView do
     "Internal server error"
   end
 
+  def render("400.json", _assigns) do
+    %{
+      message: "Bad request"
+    }
+  end
+
   def render("401.json", _assigns) do
     %{
       message: "Authentication required. Log in to perform this action"

@@ -22,4 +22,10 @@ defmodule OntagCoreWeb.FallbackController do
     |> put_status(:forbidden)
     |> render(OntagCoreWeb.ErrorView, "403.json", %{})
   end
+
+  def call(conn, {:error, :bad_request}) do
+    conn
+    |> put_status(:bad_request)
+    |> render(OntagCoreWeb.ErrorView, "400.json", %{})
+  end
 end
