@@ -55,9 +55,14 @@ defmodule OntagCore.QAMS do
         tag
         |> change()
         |> foreign_key_constraint(
-             :annotations,
-             name: :annotations_tag_id_fkey,
-             message: "This tag cannot be deleted because is part of some annotations"
+          :annotations,
+          name: :annotations_tag_id_fkey,
+          message: "This tag cannot be deleted because is part of some annotations"
+        )
+        |> foreign_key_constraint(
+          :annotations,
+          name: :questions_tags_tag_id_fkey,
+          message: "This tag cannot be deleted because is part of some question"
         )
 
       Repo.delete(changeset)

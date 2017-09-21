@@ -129,6 +129,20 @@ defmodule OntagCore.DataHelpers do
   end
 
   @doc """
+  Creates a valid `QAMS.QuestionTag`
+  """
+  def create_test_question_tag(author, question, tag) do
+    Repo.insert!(
+      %QAMS.QuestionTag{
+        author_id: author.id,
+        question_id: question.id,
+        tag_id: tag.id,
+        required: false
+      }
+    )
+  end
+
+  @doc """
   Creates a valid `QAMS.Annotation`
   """
   def create_test_annotation(author, entry, tag) do

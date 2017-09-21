@@ -8,14 +8,16 @@ defmodule OntagCore.QAMSTest do
     cms_author = create_test_cms_author(user)
     tag1 = create_test_tag(qams_author)
     tag2 = create_test_tag(qams_author)
+    tag3 = create_test_tag(qams_author)
     question = create_test_question(qams_author)
     entry = create_test_entry(cms_author)
     an1 = create_test_annotation(qams_author, entry, tag2)
+    create_test_question_tag(qams_author, question, tag3)
 
     world = %{
       user: user,
       author: qams_author,
-      tags: [tag1, tag2],
+      tags: [tag1, tag2, tag3],
       question: question,
       entry: entry,
       annotation: an1
@@ -40,7 +42,7 @@ defmodule OntagCore.QAMSTest do
     assert entry.title == "Hello World"
   end
 
-  test "Get a list of tags", %{tags: [tag1, tag2]} do
+  test "Get a list of tags", %{tags: [tag1, tag2, _]} do
     result = QAMS.list_tags()
 
     assert Enum.member?(result, tag1)
@@ -51,20 +53,24 @@ defmodule OntagCore.QAMSTest do
     assert {:error, :not_found} == QAMS.get_tag(0)
   end
 
-  test "Get a tag", %{tags: [tag, _]} do
+  test "Get a tag", %{tags: [tag, _, _]} do
     assert {:ok, tag} == QAMS.get_tag(tag.id)
   end
 
-  test "Delete an unsed tag", %{tags: [tag, _]} do
+  test "Delete an unsed tag", %{tags: [tag, _, _]} do
     assert {:ok, tag} = QAMS.delete_tag(tag.id)
     assert {:error, :not_found} == QAMS.get_tag(tag.id)
   end
 
-  test "Delete an used tag", %{tags: [_, tag]} do
+  test "Delete an used tag in annotation", %{tags: [_, tag, _]} do
     assert {:error, _} = QAMS.delete_tag(tag.id)
   end
 
-  test "Update a tag", %{tags: [tag, _]} do
+  test "Delete an used tag in question", %{tags: [_, _, tag]} do
+    assert {:error, _} = QAMS.delete_tag(tag.id)
+  end
+
+  test "Update a tag", %{tags: [tag, _, _]} do
     expected = Map.put(tag, :title, "Hello Mars")
     assert {:ok, result} = QAMS.update_tag(tag.id, %{title: "Hello Mars"})
 
@@ -75,7 +81,7 @@ defmodule OntagCore.QAMSTest do
     assert NaiveDateTime.compare(t1, t2) != :gt
   end
 
-  test "Create a question with valid tags", %{author: author, tags: [tag1, tag2]} do
+  test "Create a question with valid tags", %{author: author, tags: [tag1, tag2, _]} do
     question_params = %{
       title: "Hello World",
       required_tags: [tag1.id],
@@ -104,7 +110,12 @@ defmodule OntagCore.QAMSTest do
     assert {:ok, question} == QAMS.get_question(question.id)
   end
 
-  test "Create an annotation", %{author: author, entry: entry, tags: [tag1, _]}  do
+  test "Delete a question", %{question: question} do
+    question = Repo.preload(question, :tags)
+    assert {:ok, _} = QAMS.delete_question(question.id)
+  end
+
+  test "Create an annotation", %{author: author, entry: entry, tags: [tag1, _, _]}  do
     params = %{
       tag_id: tag1.id,
       entry_id: entry.id,
