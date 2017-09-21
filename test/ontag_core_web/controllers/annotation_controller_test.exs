@@ -11,8 +11,8 @@ defmodule OntagCoreWeb.AnnotationControllerTest do
       |> put_req_header("authorization", "Bearer #{token}")
 
     qams_author = create_test_qams_author(user)
-    cms_author = create_test_cms_author()
-    entry = create_test_entry()
+    cms_author = create_test_cms_author(user)
+    entry = create_test_entry(cms_author)
     tag1 = create_test_tag(qams_author)
     tag2 = create_test_tag(qams_author)
     world = %{

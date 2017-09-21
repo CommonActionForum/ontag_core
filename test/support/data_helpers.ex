@@ -23,9 +23,7 @@ defmodule OntagCore.DataHelpers do
   @doc """
   Creates a valid `CMS.Author`
   """
-  def create_test_cms_author do
-    user = create_test_user()
-
+  def create_test_cms_author(user) do
     Repo.insert!(
       %CMS.Author{
         user_id: user.id
@@ -36,9 +34,7 @@ defmodule OntagCore.DataHelpers do
   @doc """
   Creates a valid `CMS.Entry` without content
   """
-  def create_test_entry() do
-    author = create_test_cms_author()
-
+  def create_test_entry(author) do
     Repo.insert!(
       %CMS.Entry{
         author_id: author.id,
@@ -50,8 +46,7 @@ defmodule OntagCore.DataHelpers do
   @doc """
   Creates a valid `CMS.Entry`
   """
-  def create_test_entry(entry_type) do
-    author = create_test_cms_author()
+  def create_test_entry(author, entry_type) do
     entry = Repo.insert!(
       %CMS.Entry{
         author_id: author.id,

@@ -10,11 +10,12 @@ defmodule OntagCoreWeb.AnswerControllerTest do
       build_conn()
       |> put_req_header("authorization", "Bearer #{token}")
 
-    author = create_test_qams_author(user)
-    entry = create_test_entry()
-    tag = create_test_tag(author)
-    question = create_test_question(author)
-    annotation = create_test_annotation(author, entry, tag)
+    qams_author = create_test_qams_author(user)
+    cms_author = create_test_cms_author(user)
+    entry = create_test_entry(cms_author)
+    tag = create_test_tag(qams_author)
+    question = create_test_question(qams_author)
+    annotation = create_test_annotation(qams_author, entry, tag)
 
     world = %{
       valid_token: valid_token,

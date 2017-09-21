@@ -4,16 +4,17 @@ defmodule OntagCore.QAMSTest do
 
   setup do
     user = create_test_user()
-    author = create_test_qams_author(user)
-    tag1 = create_test_tag(author)
-    tag2 = create_test_tag(author)
-    question = create_test_question(author)
-    entry = create_test_entry()
-    an1 = create_test_annotation(author, entry, tag2)
+    qams_author = create_test_qams_author(user)
+    cms_author = create_test_cms_author(user)
+    tag1 = create_test_tag(qams_author)
+    tag2 = create_test_tag(qams_author)
+    question = create_test_question(qams_author)
+    entry = create_test_entry(cms_author)
+    an1 = create_test_annotation(qams_author, entry, tag2)
 
     world = %{
       user: user,
-      author: author,
+      author: qams_author,
       tags: [tag1, tag2],
       question: question,
       entry: entry,

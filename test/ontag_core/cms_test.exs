@@ -4,11 +4,13 @@ defmodule OntagCore.CMSTest do
 
   setup do
     user = create_test_user()
-    author = create_test_cms_author()
+    author = create_test_cms_author(user)
+    entry = create_test_entry(author)
 
     map = %{
       user: user,
-      author: author
+      author: author,
+      entry: entry
     }
 
     {:ok, map}
@@ -56,5 +58,19 @@ defmodule OntagCore.CMSTest do
     }
 
     assert {:ok, _} = CMS.create_entry(author, params)
+  end
+
+  test "List of all entries", %{entry: entry} do
+    assert [entry] == CMS.list_entries()
+  end
+
+  test "Get an existing entry", %{entry: entry} do
+    entry =
+      entry
+      |> Repo.preload(:author)
+      |> Repo.preload(:external_html)
+      |> Repo.preload(:medium_post)
+
+    assert {:ok, entry} == CMS.get_entry(entry.id)
   end
 end
