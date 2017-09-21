@@ -27,7 +27,7 @@ defmodule OntagCore.Repo.Migrations.CreateQams do
     end
 
     create table(:questions_tags) do
-      add :question_id, references(:questions),
+      add :question_id, references(:questions, on_delete: :delete_all),
         null: false
       add :tag_id, references(:tags),
         null: false
