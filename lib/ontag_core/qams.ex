@@ -175,6 +175,7 @@ defmodule OntagCore.QAMS do
       result =
         %Answer{question_id: question_id}
         |> change()
+        |> put_change(:author_id, author.id)
         |> cast(%{question_id: question_id}, [:question_id])
         |> Repo.insert()
         |> add_annotations(author, annotations)
