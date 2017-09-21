@@ -54,9 +54,13 @@ defmodule OntagCore.QAMSTest do
     assert {:ok, tag} == QAMS.get_tag(tag.id)
   end
 
-  test "Delete a tag", %{tags: [tag, _]} do
+  test "Delete an unsed tag", %{tags: [tag, _]} do
     assert {:ok, tag} = QAMS.delete_tag(tag.id)
     assert {:error, :not_found} == QAMS.get_tag(tag.id)
+  end
+
+  test "Delete an used tag", %{tags: [_, tag]} do
+    assert {:error, _} = QAMS.delete_tag(tag.id)
   end
 
   test "Update a tag", %{tags: [tag, _]} do
