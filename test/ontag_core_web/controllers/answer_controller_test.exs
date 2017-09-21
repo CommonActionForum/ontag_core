@@ -42,4 +42,19 @@ defmodule OntagCoreWeb.AnswerControllerTest do
     conn = post(conn, answer_path(build_conn(), :create, params))
     assert json_response(conn, :created)
   end
+
+  test "GET /answers" do
+    conn = get(build_conn(), answer_path(build_conn(), :index))
+    assert json_response(conn, :ok)
+  end
+
+  test "GET /answers/:id with non-existent id" do
+    conn = get(build_conn(), answer_path(build_conn(), :show, 0))
+    assert json_response(conn, :not_found)
+  end
+
+  test "DELETE /answers/:id with non-existent id" do
+    conn = delete(build_conn(), answer_path(build_conn(), :delete, 0))
+    assert json_response(conn, :not_found)
+  end
 end

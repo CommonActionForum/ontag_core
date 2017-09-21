@@ -14,4 +14,30 @@ defmodule OntagCoreWeb.AnswerController do
       |> json(%{id: answer.id})
     end
   end
+
+  def index(conn, _) do
+    answers =
+      QAMS.list_answers()
+      |> Enum.map(fn answer -> %{id: answer.id} end)
+
+    conn
+    |> put_status(:ok)
+    |> json(answers)
+  end
+
+  def show(conn, %{"id" => id}) do
+    with {:ok, answer} <- QAMS.get_answer(id) do
+      conn
+      |> put_status(:ok)
+      |> json(%{id: answer.id})
+    end
+  end
+
+  def delete(conn, %{"id" => id}) do
+    with {:ok, _tag} <- QAMS.delete_answer(id) do
+      conn
+      |> put_status(:ok)
+      |> json(%{message: "Tag successfully deleted"})
+    end
+  end
 end

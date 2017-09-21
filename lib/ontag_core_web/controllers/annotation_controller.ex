@@ -14,4 +14,30 @@ defmodule OntagCoreWeb.AnnotationController do
       |> json(%{id: annotation.id})
     end
   end
+
+  def index(conn, _) do
+    annotations =
+      QAMS.list_annotations()
+      |> Enum.map(fn annotation -> %{id: annotation.id} end)
+
+    conn
+    |> put_status(:ok)
+    |> json(annotations)
+  end
+
+  def show(conn, %{"id" => id}) do
+    with {:ok, annotation} <- QAMS.get_annotation(id) do
+      conn
+      |> put_status(:ok)
+      |> json(%{id: annotation.id})
+    end
+  end
+
+  def delete(conn, %{"id" => id}) do
+    with {:ok, _tag} <- QAMS.delete_annotation(id) do
+      conn
+      |> put_status(:ok)
+      |> json(%{message: "Tag successfully deleted"})
+    end
+  end
 end

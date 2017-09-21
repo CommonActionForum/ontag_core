@@ -39,4 +39,19 @@ defmodule OntagCoreWeb.AnnotationControllerTest do
     conn = post(conn, annotation_path(build_conn(), :create, annotation_params))
     assert json_response(conn, :created)
   end
+
+  test "GET /annotations" do
+    conn = get(build_conn(), annotation_path(build_conn(), :index))
+    assert json_response(conn, :ok)
+  end
+
+  test "GET /annotations/:id with non-existent id" do
+    conn = get(build_conn(), annotation_path(build_conn(), :show, 0))
+    assert json_response(conn, :not_found)
+  end
+
+  test "DELETE /annotations/:id with non-existent id" do
+    conn = delete(build_conn(), annotation_path(build_conn(), :delete, 0))
+    assert json_response(conn, :not_found)
+  end
 end
