@@ -17,7 +17,7 @@ defmodule OntagCoreWeb.QuestionController do
 
   def index(conn, _) do
     questions =
-      QAMS.list_tags()
+      QAMS.list_questions()
       |> Enum.map(fn question -> %{id: question.id, title: question.title} end)
 
     conn
@@ -30,6 +30,14 @@ defmodule OntagCoreWeb.QuestionController do
       conn
       |> put_status(:ok)
       |> json(%{id: question.id, title: question.title})
+    end
+  end
+
+  def delete(conn, %{"id" => id}) do
+    with {:ok, _} <- QAMS.delete_question(id) do
+      conn
+      |> put_status(:ok)
+      |> json(%{message: "Question successfully deleted"})
     end
   end
 end

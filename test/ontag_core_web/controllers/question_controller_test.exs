@@ -18,10 +18,14 @@ defmodule OntagCoreWeb.QuestionControllerTest do
       build_conn()
       |> put_req_header("authorization", "Bearer #{token}")
 
+    author = create_test_qams_author(user)
+    question = create_test_question(author)
+
     world = %{
       wrong_header: wrong_header,
       wrong_token: wrong_token,
-      valid_token: valid_token
+      valid_token: valid_token,
+      question: question
     }
 
     {:ok, world}
@@ -58,9 +62,23 @@ defmodule OntagCoreWeb.QuestionControllerTest do
     assert json_response(conn, :ok)
   end
 
-  test "GET /tags/:id with non-existent id" do
-    conn = get(build_conn(), question_path(build_conn(), :show, 0))
+  test "GET /questions/:id with existent id", %{question: question} do
+    conn = get(build_conn(), question_path(build_conn(), :show, question.id))
+    assert json_response(conn, :ok)
+  end
 
+  test "GET /questions/:id with non-existent id" do
+    conn = get(build_conn(), question_path(build_conn(), :show, 0))
+    assert json_response(conn, :not_found)
+  end
+
+  test "DELETE /questions/:id with existent id", %{question: question} do
+    conn = delete(build_conn(), question_path(build_conn(), :delete, question.id))
+    assert json_response(conn, :ok)
+  end
+
+  test "DELETE /questions/:id with non-existent id" do
+    conn = delete(build_conn(), question_path(build_conn(), :delete, 0))
     assert json_response(conn, :not_found)
   end
 end
