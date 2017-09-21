@@ -6,11 +6,16 @@ defmodule OntagCore.CMSTest do
     user = create_test_user()
     author = create_test_cms_author(user)
     entry = create_test_entry(author)
+    entry2 = create_test_entry(author, "external_html")
+    entry3 = create_test_entry(author, "medium_post")
+    qams_author = create_test_qams_author(user)
+    tag = create_test_tag(qams_author)
+    create_test_annotation(qams_author, entry, tag)
 
     map = %{
       user: user,
       author: author,
-      entry: entry
+      entries: [entry, entry2, entry3]
     }
 
     {:ok, map}
@@ -60,11 +65,15 @@ defmodule OntagCore.CMSTest do
     assert {:ok, _} = CMS.create_entry(author, params)
   end
 
-  test "List of all entries", %{entry: entry} do
-    assert [entry] == CMS.list_entries()
+  test "List of all entries", %{entries: [e1, e2, e3]} do
+    result = CMS.list_entries()
+
+    assert Enum.member?(result, e1)
+    assert Enum.member?(result, e2)
+    assert Enum.member?(result, e3)
   end
 
-  test "Get an existing entry", %{entry: entry} do
+  test "Get an existing entry", %{entries: [entry, _, _]} do
     entry =
       entry
       |> Repo.preload(:author)
@@ -72,5 +81,19 @@ defmodule OntagCore.CMSTest do
       |> Repo.preload(:medium_post)
 
     assert {:ok, entry} == CMS.get_entry(entry.id)
+  end
+
+  test "Delete an entry", %{author: author} do
+    entry = create_test_entry(author)
+    assert {:ok, _} = CMS.delete_entry(entry.id)
+  end
+
+  test "Delete an entry with content", %{author: author} do
+    entry = create_test_entry(author, "external_html")
+    assert {:ok, _} = CMS.delete_entry(entry.id)
+  end
+
+  test "Delete an entry with annotations", %{entries: [entry, _, _]} do
+    assert {:error, _} = CMS.delete_entry(entry.id)
   end
 end

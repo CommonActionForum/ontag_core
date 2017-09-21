@@ -70,6 +70,21 @@ defmodule OntagCore.CMS do
     end
   end
 
+  @doc """
+  Deletes an entry
+  """
+  def delete_entry(id) do
+    with {:ok, entry} <- get_entry(id) do
+      entry
+      |> change()
+      |> foreign_key_constraint(
+        :annotations,
+        name: :annotations_entry_id_fkey,
+        message: "This entry has annotations and cannot be deleted")
+      |> Repo.delete()
+    end
+  end
+
   def ensure_author_exists(%Accounts.User{} = user) do
     %Author{user_id: user.id}
     |> Ecto.Changeset.change()

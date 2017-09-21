@@ -25,14 +25,16 @@ defmodule OntagCore.Repo.Migrations.CreateCms do
       add :publishing_date, :utc_datetime
       add :license, :string
       add :tags, {:array, :string}
-      add :entry_id, references(:entries), null: false
+      add :entry_id, references(:entries, on_delete: :delete_all),
+        null: false
 
       timestamps()
     end
 
     create table(:external_htmls) do
       add :uri, :string
-      add :entry_id, references(:entries), null: false
+      add :entry_id, references(:entries, on_delete: :delete_all),
+        null: false
 
       timestamps()
     end
