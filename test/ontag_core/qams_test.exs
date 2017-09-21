@@ -10,9 +10,12 @@ defmodule OntagCore.QAMSTest do
     tag2 = create_test_tag(qams_author)
     tag3 = create_test_tag(qams_author)
     question = create_test_question(qams_author)
+    question2 = create_test_question(qams_author)
     entry = create_test_entry(cms_author)
     an1 = create_test_annotation(qams_author, entry, tag2)
     create_test_question_tag(qams_author, question, tag3)
+    answer = create_test_answer(question2)
+    create_test_answer_annotation(answer, an1)
 
     world = %{
       user: user,
@@ -20,7 +23,8 @@ defmodule OntagCore.QAMSTest do
       tags: [tag1, tag2, tag3],
       question: question,
       entry: entry,
-      annotation: an1
+      annotation: an1,
+      answer: answer
     }
 
     {:ok, world}
@@ -101,8 +105,8 @@ defmodule OntagCore.QAMSTest do
     {:error, _} = QAMS.create_question(author, question_params)
   end
 
-  test "Get a list of all questions", %{question: question} do
-    assert [question] == QAMS.list_questions
+  test "Get a list of all questions" do
+    assert [_, _] = QAMS.list_questions
   end
 
   test "Get a question", %{question: question} do
@@ -125,11 +129,50 @@ defmodule OntagCore.QAMSTest do
     assert {:ok, _} = QAMS.create_annotation(author, params)
   end
 
+  test "Get a list of all annotations" do
+    assert [_] = QAMS.list_annotations()
+  end
+
+  test "Get an annotation", %{annotation: annotation} do
+    assert {:ok, _} = QAMS.get_annotation(annotation.id)
+  end
+
+  test "Get a non-existent annotation" do
+    assert {:error, :not_found} == QAMS.get_annotation(0)
+  end
+
+  test "Delete an annotation", %{annotation: annotation} do
+    assert {:ok, _} = QAMS.delete_annotation(annotation.id)
+  end
+
+  test "Delete an annotation used in an answer", %{annotation: annotation, question: question} do
+    answer = create_test_answer(question)
+    create_test_answer_annotation(answer, annotation)
+
+    assert {:ok, _} = QAMS.delete_annotation(annotation.id)
+  end
+
   test "Create an answer", %{author: author, question: question, annotation: annotation} do
     params = %{
       question_id: question.id,
       annotations: [annotation.id]
     }
     assert {:ok, _} = QAMS.create_answer(author, params)
+  end
+
+  test "Get an answer", %{answer: answer} do
+    assert {:ok, _} = QAMS.get_answer(answer.id)
+  end
+
+  test "Get a non-existent answer" do
+    assert {:error, :not_found} == QAMS.get_answer(0)
+  end
+
+  test "Delete an answer", %{answer: answer} do
+    assert {:ok, _} = QAMS.delete_answer(answer.id)
+  end
+
+  test "Delete a non-existent answer" do
+    assert {:error, :not_found} == QAMS.delete_answer(0)
   end
 end

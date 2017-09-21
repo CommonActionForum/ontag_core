@@ -59,9 +59,9 @@ defmodule OntagCore.Repo.Migrations.CreateQams do
     end
 
     create table(:answers_annotations) do
-      add :answer_id, references(:answers),
+      add :answer_id, references(:answers, on_delete: :delete_all),
         null: false
-      add :annotation_id, references(:annotations),
+      add :annotation_id, references(:annotations, on_delete: :delete_all),
         null: false
 
       timestamps()

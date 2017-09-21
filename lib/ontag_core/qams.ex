@@ -167,7 +167,9 @@ defmodule OntagCore.QAMS do
     end
   end
 
-
+  @doc """
+  Creates an annotation
+  """
   def create_annotation(%Author{} = author, params) do
     %Annotation{}
     |> Annotation.changeset(params)
@@ -175,6 +177,43 @@ defmodule OntagCore.QAMS do
     |> Repo.insert()
   end
 
+  @doc """
+  Gets a list of all annotations
+  """
+  def list_annotations do
+    Repo.all(Annotation)
+  end
+
+  @doc """
+  Get an annotation given its ID
+  """
+  def get_annotation(id) do
+    case Repo.get(Annotation, id) do
+      nil ->
+        {:error, :not_found}
+
+      annotation ->
+        annotation = Repo.preload(annotation, :tag)
+        {:ok, annotation}
+    end
+  end
+
+  @doc """
+  Deletes an annotation
+  """
+  def delete_annotation(id) do
+    with {:ok, annotation} <- get_annotation(id) do
+      changeset =
+        annotation
+        |> change()
+
+      Repo.delete(changeset)
+    end
+  end
+
+  @doc """
+  Creates an answer
+  """
   def create_answer(%Author{} = author, %{question_id: question_id, annotations: annotations}) do
     Repo.transaction(fn ->
       result =
@@ -220,6 +259,27 @@ defmodule OntagCore.QAMS do
 
       {:error, changeset} ->
         {:error, changeset}
+    end
+  end
+
+  def list_answers do
+    Repo.all(Answer)
+  end
+
+  def get_answer(id) do
+    case Repo.get(Answer, id) do
+      nil ->
+        {:error, :not_found}
+
+      answer ->
+        answer = Repo.preload(answer, :annotations)
+        {:ok, answer}
+    end
+  end
+
+  def delete_answer(id) do
+    with {:ok, answer} <- get_answer(id) do
+      Repo.delete(answer)
     end
   end
 

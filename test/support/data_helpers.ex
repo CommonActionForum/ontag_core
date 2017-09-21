@@ -157,4 +157,27 @@ defmodule OntagCore.DataHelpers do
       }
     )
   end
+
+  @doc """
+  Creates a valid `QAMS.Answer`
+  """
+  def create_test_answer(question) do
+    Repo.insert!(
+      %QAMS.Answer{
+        question_id: question.id
+      }
+    )
+  end
+
+  @doc """
+  Creates a valid `QAMS.AnswerAnnotation`
+  """
+  def create_test_answer_annotation(answer, annotation) do
+    Repo.insert!(
+      %QAMS.AnswerAnnotation{
+        answer_id: answer.id,
+        annotation_id: annotation.id
+      }
+    )
+  end
 end
