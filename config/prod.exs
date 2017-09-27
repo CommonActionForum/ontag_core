@@ -41,6 +41,11 @@ config :my_app, MyApp.Guardian,
   issuer: "liqen_core",
   secret_key: System.get_env("GUARDIAN_SECRET_KEY")
 
+config :ontag_core, OntagCore.Accounts,
+  medium_client_id: System.get_env("MEDIUM_CLIENT_ID"),
+  medium_client_secret: System.get_env("MEDIUM_CLIENT_SECRET"),
+  medium_redirect_uri: System.get_env("MEDIUM_REDIRECT_URI")
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key

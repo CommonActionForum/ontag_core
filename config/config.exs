@@ -27,6 +27,12 @@ config :ontag_core, OntagCore.Guardian,
   issuer: "liqen_core",
   secret_key: "VQ1QVNnBfpMcU4X97BeJ4v0zc24G+AoANoMiCGlT41YTUUSlC7jPG2E5Z1NTj9OH"
 
+# Configure Medium things
+config :ontag_core, OntagCore.Accounts,
+  medium_client_id: "c733d40fdd71",
+  medium_client_secret: "8bec1e70cfd43502f2845263140940ae0f4f7766",
+  medium_redirect_uri: "https://example.com/ontag"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"

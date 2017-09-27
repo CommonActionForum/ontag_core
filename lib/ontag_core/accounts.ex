@@ -1,7 +1,8 @@
 defmodule OntagCore.Accounts do
   alias OntagCore.Repo
   alias OntagCore.Accounts.{User,
-                            PasswordCredential}
+                            PasswordCredential,
+                            MediumCredential}
   @moduledoc """
   Accounts manager. Create accounts and authenticate users.
 
@@ -75,4 +76,185 @@ defmodule OntagCore.Accounts do
     {:ok, pc.user}
   end
   def get_user_from_password_credential(any), do: any
+
+  @doc """
+  Get data needed to log in a `user` via medium: a `state` (returned directly by
+  this function) and a `code`.
+
+  To get the `code`, follow the steps in
+  [Medium API documentation](https://github.com/Medium/medium-api-docs#2-authentication)
+  to redirect the user to a page in your domain with a short-term authorization
+  code.
+
+  From that redirect_uri, collect the `state` and `code` and call
+  `login_with_medium/2`.
+  """
+  def get_medium_login_data(user) do
+    # If the user has MediumCredential, refresh the `state` with a random
+    # generated one.
+
+    # Otherwise, create a MediumCredential with a random generated "state"
+    # linked with `user`
+    state = Base.encode16(:crypto.strong_rand_bytes(8))
+
+    case Repo.get_by(MediumCredential, user_id: user.id) do
+      nil -> %MediumCredential{user_id: user.id}
+      credential -> credential
+    end
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_change(:state, state)
+    |> Repo.insert_or_update!()
+
+    state
+  end
+
+  @doc """
+  Authenticate a user via medium giving a `state` and a `code`
+
+  To get both `state` and `code`, use `get_medium_login_data/0` or
+  `get_medium_login_data/1`
+  """
+  def login_with_medium(state, code) do
+    state
+    |> get_medium_credential_from_state()
+    |> get_medium_long_lived_token(code)
+    |> get_medium_user_data()
+    |> update_medium_data()
+    |> ensure_user_exists()
+  end
+
+  @doc """
+  Retrieve a MediumCredential
+  """
+  defp get_medium_credential_from_state(state) do
+    case Repo.get_by(MediumCredential, state: state) do
+      nil -> {:error, :not_found}
+      credential -> {:ok, credential}
+    end
+  end
+
+  @doc """
+  Request a Medium Long-lived token from its API
+  """
+  def get_medium_long_lived_token({:ok, credential}, code) do
+    uri = "https://api.medium.com/v1/tokens"
+    body = [
+      code: code,
+      client_id: Application.get_env(:ontag_core, OntagCore.Accounts)[:medium_client_id],
+      client_secret: Application.get_env(:ontag_core, OntagCore.Accounts)[:medium_client_secret],
+      grant_type: "authorization_code",
+      redirect_uri: Application.get_env(:ontag_core, OntagCore.Accounts)[:medium_redirect_uri]
+    ]
+
+    headers = %{
+      "Content-Type" => "application/x-www-form-urlencoded",
+      "Accept" => "application/json"
+    }
+
+    with {:ok, %{"access_token" => access_token}} <-
+      uri
+      |> HTTPoison.post({:form, body}, headers)
+      |> handle_json_response(201)
+    do
+      {:ok, credential, access_token}
+    end
+  end
+  def get_medium_long_lived_token(any, _), do: any
+
+  @doc """
+  Get current user data from a Medium Token
+  """
+  def get_medium_user_data({:ok, credential, access_token}) do
+    uri = "https://api.medium.com/v1/me"
+    headers = %{
+      "Content-Type" => "application/json",
+      "Accept" => "application/json",
+      "Authorization" => "Bearer #{access_token}"
+    }
+    with {:ok, %{"data" => data}} <-
+      uri
+      |> HTTPoison.get(headers)
+      |> handle_json_response(200)
+    do
+      {:ok, credential, data}
+    end
+  end
+  def get_medium_user_data(any), do: any
+
+  defp handle_json_response({:ok, response}, status_code) do
+    %{body: json_body,
+      status_code: code} = response
+
+    case code do
+      ^status_code ->
+        Poison.decode(json_body)
+      _ ->
+        {:error, json_body}
+    end
+  end
+  defp handle_json_response(any, _), do: any
+
+  @doc """
+  Update a MediumCredential
+  """
+  def update_medium_data({:ok, new_credential, data}) do
+    %{
+      "id" => medium_id,
+      "imageUrl" => image_url,
+      "name" => name,
+      "url" => url,
+      "username" => username
+    } = data
+
+    attrs = %{
+      medium_id: medium_id,
+      username: username,
+      name: name,
+      url: url,
+      image_url: image_url
+    }
+
+    case Repo.get_by(MediumCredential, medium_id: medium_id) do
+      nil ->
+        new_credential
+        |> MediumCredential.changeset(attrs)
+        |> Repo.update()
+
+      old_credential ->
+        old_credential
+        |> MediumCredential.changeset(attrs)
+        |> Repo.update()
+
+    end
+  end
+  def update_medium_data(any), do: any
+
+  @doc """
+  Given a MediumCredential, creates a User if necessary
+  """
+  def ensure_user_exists({:ok, %MediumCredential{} = credential}) do
+    %{user: user,
+      username: username} = Repo.preload(credential, :user)
+
+    params = %{
+      username: username <> Base.encode16(:crypto.strong_rand_bytes(3))
+    }
+
+    case user do
+      nil ->
+        {:ok, user} =
+          %User{}
+          |> User.changeset(params)
+          |> Repo.insert()
+
+        credential
+        |> Ecto.Changeset.change(user_id: user.id)
+        |> Repo.update()
+
+        {:ok, user}
+      _ ->
+        {:ok, user}
+    end
+  end
+  def ensure_user_exists(any), do: any
 end

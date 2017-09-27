@@ -2,7 +2,8 @@ defmodule OntagCore.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias OntagCore.Accounts.{User,
-                            PasswordCredential}
+                            PasswordCredential,
+                            MediumCredential}
 
   @moduledoc """
   Schema for User
@@ -12,6 +13,7 @@ defmodule OntagCore.Accounts.User do
     field :username, :string
     field :name, :string
     has_one :password_credential, PasswordCredential
+    has_one :medium_credential, MediumCredential
 
     timestamps()
   end
