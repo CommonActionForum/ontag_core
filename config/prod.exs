@@ -22,7 +22,7 @@ config :ontag_core, OntagCoreWeb.Endpoint,
   http: [port: {:system, "PORT"}],
   url: [scheme: "https", host: System.get_env("APP_URL_HOST"), port: 443],
   force_ssl: [rewrite_on: [:x_forwarded_proto]],
-  cache_static_manifest: "priv/static/manifest.json",
+  # cache_static_manifest: "priv/static/manifest.json",
   secret_key_base: System.get_env("SECRET_KEY_BASE")
 
 # Configure Database
@@ -37,8 +37,8 @@ config :ontag_core, OntagCore.Repo,
 # Do not print debug messages in production
 config :logger, level: :info
 
-config :my_app, MyApp.Guardian,
-  issuer: "liqen_core",
+config :ontag_core, MyApp.Guardian,
+  issuer: "ontag_core",
   secret_key: System.get_env("GUARDIAN_SECRET_KEY")
 
 config :ontag_core, OntagCore.Accounts,
