@@ -1,5 +1,7 @@
 defmodule OntagCoreWeb.MeController do
   use OntagCoreWeb, :controller
+  alias OntagCore.Repo
+  alias OntagCore.Accounts.MediumCredential
 
   plug OntagCoreWeb.Authentication when action in [:index, :add_medium_credential]
   action_fallback OntagCoreWeb.FallbackController
@@ -7,6 +9,21 @@ defmodule OntagCoreWeb.MeController do
   def index(conn, _) do
     user =
       conn.assigns[:current_user]
+      |> Repo.preload(:medium_credential)
+
+    mc =
+      case user.medium_credential do
+        m = %MediumCredential{} ->
+          %{
+            username: m.username,
+            name: m.name,
+            url: m.url,
+            medium_id: m.medium_id
+          }
+
+        _ ->
+          %{}
+      end
 
     conn
     |> put_status(:ok)
@@ -14,7 +31,8 @@ defmodule OntagCoreWeb.MeController do
       %{
         id: user.id,
         name: user.name,
-        username: user.username
+        username: user.username,
+        medium_credential: mc
       }
     )
   end
