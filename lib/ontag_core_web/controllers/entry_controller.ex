@@ -1,6 +1,7 @@
 defmodule OntagCoreWeb.EntryController do
   use OntagCoreWeb, :controller
   alias OntagCore.CMS
+  alias OntagCore.Repo
 
   plug OntagCoreWeb.Authentication when action in [:create]
   action_fallback OntagCoreWeb.FallbackController
@@ -18,7 +19,9 @@ defmodule OntagCoreWeb.EntryController do
   def index(conn, _) do
     entries =
       CMS.list_entries()
-      |> Enum.map(fn entry -> %{id: entry.id, title: entry.title} end)
+      |> Repo.preload(:medium_post)
+      |> Repo.preload(:external_html)
+      |> Enum.map(&take/1)
 
     conn
     |> put_status(:ok)
@@ -39,5 +42,25 @@ defmodule OntagCoreWeb.EntryController do
       |> put_status(:ok)
       |> json(%{id: entry.id, title: entry.title})
     end
+  end
+
+  defp take(entry) do
+    base = %{
+      id: entry.id,
+      title: entry.title,
+      entry_type: entry.entry_type
+    }
+
+    extra =
+      case entry.entry_type do
+        "medium_post" ->
+          %{medium_post: %{title: entry.medium_post.title,
+                           uri: entry.medium_post.uri}}
+
+        "external_html" ->
+          %{}
+      end
+
+    Map.merge(base, extra)
   end
 end
