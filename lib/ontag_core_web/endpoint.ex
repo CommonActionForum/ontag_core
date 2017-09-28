@@ -38,6 +38,11 @@ defmodule OntagCoreWeb.Endpoint do
     key: "_ontag_core_key",
     signing_salt: "AZWB1aag"
 
+  plug Corsica,
+    origins: "*",
+    allow_headers: ["authorization", "content-type"],
+    log: [rejected: :error, invalid: :info, accepted: :info]
+
   plug OntagCoreWeb.Router
 
   @doc """

@@ -57,7 +57,8 @@ defmodule OntagCore.Mixfile do
       {:ex_doc, "~> 0.14", only: :dev, runtime: false},
       {:excoveralls, "~> 0.6", only: :test},
       {:guardian, "~> 1.0-beta"},
-      {:httpoison, "~> 0.13"}
+      {:httpoison, "~> 0.13"},
+      {:corsica, "~> 1.0"}
     ]
   end
 
