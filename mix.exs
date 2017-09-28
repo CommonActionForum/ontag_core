@@ -56,7 +56,8 @@ defmodule OntagCore.Mixfile do
       {:bcrypt_elixir, "~> 0.12"},
       {:ex_doc, "~> 0.14", only: :dev, runtime: false},
       {:excoveralls, "~> 0.6", only: :test},
-      {:guardian, "~> 1.0-beta"}
+      {:guardian, "~> 1.0-beta"},
+      {:httpoison, "~> 0.13"}
     ]
   end
 

@@ -1,30 +1,34 @@
 defmodule OntagCore.CMSTest do
   use OntagCore.DataCase
   alias OntagCore.CMS
-  alias OntagCore.CMS.Entry
 
-  test "Ensure that an author exists" do
-    params = %{
-      username: "john_example",
-      name: "John example"
+  setup do
+    user = create_test_user()
+    author = create_test_cms_author(user)
+    entry = create_test_entry(author)
+    entry2 = create_test_entry(author, "external_html")
+    entry3 = create_test_entry(author, "medium_post")
+    qams_author = create_test_qams_author(user)
+    tag = create_test_tag(qams_author)
+    create_test_annotation(qams_author, entry, tag)
+
+    map = %{
+      user: user,
+      author: author,
+      entries: [entry, entry2, entry3]
     }
 
-    {:ok, user} = OntagCore.Accounts.create_user(params)
+    {:ok, map}
+  end
+
+  test "Ensure that an author exists", %{user: user} do
     author = CMS.ensure_author_exists(user)
     author2 = CMS.ensure_author_exists(user)
     assert author.user_id == user.id
     assert author == author2
   end
 
-  test "Create an entry without content successfully" do
-    user_params = %{
-      username: "john_example",
-      name: "John example"
-    }
-
-    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-    author = CMS.ensure_author_exists(user)
-
+  test "Create an entry without content successfully", %{author: author} do
     params = %{
       title: "Hello World"
     }
@@ -33,15 +37,7 @@ defmodule OntagCore.CMSTest do
     assert entry.title == "Hello World"
   end
 
-  test "Create an external html entry" do
-    user_params = %{
-      username: "john_example",
-      name: "John example"
-    }
-
-    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-    author = CMS.ensure_author_exists(user)
-
+  test "Create an external html entry", %{author: author} do
     params = %{
       title: "Hello World",
       entry_type: "external_html",
@@ -53,24 +49,13 @@ defmodule OntagCore.CMSTest do
     assert {:ok, _} = CMS.create_entry(author, params)
   end
 
-  test "Create an medium post entry" do
-    user_params = %{
-      username: "john_example",
-      name: "John example"
-    }
-
-    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-    author = CMS.ensure_author_exists(user)
-
+  test "Create an medium post entry", %{author: author} do
     params = %{
       title: "Hello World",
       entry_type: "medium_post",
       medium_post: %{
         title: "Hello World",
         uri: "http://www.example.com",
-        publishing_date: %DateTime{year: 2000, month: 2, day: 29, zone_abbr: "CET",
-                                   hour: 23, minute: 0, second: 7, microsecond: {0, 0},
-                                   utc_offset: 3600, std_offset: 0, time_zone: "Europe/Warsaw"},
         license: "copyright",
         tags: ["Example"],
         copyright_cesion: true
@@ -78,5 +63,37 @@ defmodule OntagCore.CMSTest do
     }
 
     assert {:ok, _} = CMS.create_entry(author, params)
+  end
+
+  test "List of all entries", %{entries: [e1, e2, e3]} do
+    result = CMS.list_entries()
+
+    assert Enum.member?(result, e1)
+    assert Enum.member?(result, e2)
+    assert Enum.member?(result, e3)
+  end
+
+  test "Get an existing entry", %{entries: [entry, _, _]} do
+    entry =
+      entry
+      |> Repo.preload(:author)
+      |> Repo.preload(:external_html)
+      |> Repo.preload(:medium_post)
+
+    assert {:ok, entry} == CMS.get_entry(entry.id)
+  end
+
+  test "Delete an entry", %{author: author} do
+    entry = create_test_entry(author)
+    assert {:ok, _} = CMS.delete_entry(entry.id)
+  end
+
+  test "Delete an entry with content", %{author: author} do
+    entry = create_test_entry(author, "external_html")
+    assert {:ok, _} = CMS.delete_entry(entry.id)
+  end
+
+  test "Delete an entry with annotations", %{entries: [entry, _, _]} do
+    assert {:error, _} = CMS.delete_entry(entry.id)
   end
 end

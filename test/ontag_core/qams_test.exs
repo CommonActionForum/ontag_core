@@ -2,28 +2,42 @@ defmodule OntagCore.QAMSTest do
   use OntagCore.DataCase
   alias OntagCore.QAMS
 
-  test "Ensure that an author exists" do
-    params = %{
-      username: "john_example",
-      name: "John example"
+  setup do
+    user = create_test_user()
+    qams_author = create_test_qams_author(user)
+    cms_author = create_test_cms_author(user)
+    tag1 = create_test_tag(qams_author)
+    tag2 = create_test_tag(qams_author)
+    tag3 = create_test_tag(qams_author)
+    question = create_test_question(qams_author)
+    question2 = create_test_question(qams_author)
+    entry = create_test_entry(cms_author)
+    an1 = create_test_annotation(qams_author, entry, tag2)
+    create_test_question_tag(qams_author, question, tag3)
+    answer = create_test_answer(question2)
+    create_test_answer_annotation(answer, an1)
+
+    world = %{
+      user: user,
+      author: qams_author,
+      tags: [tag1, tag2, tag3],
+      question: question,
+      entry: entry,
+      annotation: an1,
+      answer: answer
     }
 
-    {:ok, user} = OntagCore.Accounts.create_user(params)
+    {:ok, world}
+  end
+
+  test "Ensure that an author exists", %{user: user} do
     author = QAMS.ensure_author_exists(user)
     author2 = QAMS.ensure_author_exists(user)
     assert author.user_id == user.id
     assert author == author2
   end
 
-  test "Create a tag" do
-    user_params = %{
-      username: "john_example",
-      name: "John example"
-    }
-
-    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-    author = QAMS.ensure_author_exists(user)
-
+  test "Create a tag", %{author: author} do
     params = %{
       title: "Hello World"
     }
@@ -32,77 +46,133 @@ defmodule OntagCore.QAMSTest do
     assert entry.title == "Hello World"
   end
 
-  test "Create a question with valid tags" do
-    user_params = %{
-      username: "john_example",
-      name: "John example"
-    }
+  test "Get a list of tags", %{tags: [tag1, tag2, _]} do
+    result = QAMS.list_tags()
 
-    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-    author = QAMS.ensure_author_exists(user)
-    {:ok, tag1} = QAMS.create_tag(author, %{title: "Tag 1"})
-    {:ok, tag2} = QAMS.create_tag(author, %{title: "Tag 2"})
-
-    question_params = %{
-      title: "Hello World"
-    }
-
-    tags_params = [
-      %{tag_id: tag1.id, required: true},
-      %{tag_id: tag2.id, required: false}
-    ]
-
-    assert {:ok, question} = QAMS.create_question(author, question_params, tags_params)
-    assert question.title == "Hello World"
+    assert Enum.member?(result, tag1)
+    assert Enum.member?(result, tag2)
   end
 
-  test "Create a question with non-valid tags" do
-    user_params = %{
-      username: "john_example",
-      name: "John example"
-    }
-
-    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-    author = QAMS.ensure_author_exists(user)
-
-    question_params = %{
-      title: "Hello World"
-    }
-
-    tags_params = [
-      %{tag_id: 1, required: true},
-      %{tag_id: 0, required: false}
-    ]
-
-    {:error, _} = QAMS.create_question(author, question_params, tags_params)
+  test "Get a non-existent tag" do
+    assert {:error, :not_found} == QAMS.get_tag(0)
   end
 
-  test "Create an annotation" do
-    user_params = %{
-      username: "john_example",
-      name: "John example"
+  test "Get a tag", %{tags: [tag, _, _]} do
+    assert {:ok, tag} == QAMS.get_tag(tag.id)
+  end
+
+  test "Delete an unsed tag", %{tags: [tag, _, _]} do
+    assert {:ok, tag} = QAMS.delete_tag(tag.id)
+    assert {:error, :not_found} == QAMS.get_tag(tag.id)
+  end
+
+  test "Delete an used tag in annotation", %{tags: [_, tag, _]} do
+    assert {:error, _} = QAMS.delete_tag(tag.id)
+  end
+
+  test "Delete an used tag in question", %{tags: [_, _, tag]} do
+    assert {:error, _} = QAMS.delete_tag(tag.id)
+  end
+
+  test "Update a tag", %{tags: [tag, _, _]} do
+    expected = Map.put(tag, :title, "Hello Mars")
+    assert {:ok, result} = QAMS.update_tag(tag.id, %{title: "Hello Mars"})
+
+    {t1, e1} = Map.pop(expected, :updated_at)
+    {t2, e2} = Map.pop(result, :updated_at)
+
+    assert e1 == e2
+    assert NaiveDateTime.compare(t1, t2) != :gt
+  end
+
+  test "Create a question with valid tags", %{author: author, tags: [tag1, tag2, _]} do
+    question_params = %{
+      title: "Hello World",
+      required_tags: [tag1.id],
+      optional_tags: [tag2.id]
     }
 
-    entry_params = %{
-      title: "Example entry"
+    assert {:ok, _} = QAMS.create_question(author, question_params)
+  end
+
+  test "Create a question with non-valid tags", %{author: author} do
+    question_params = %{
+      title: "Hello World",
+      required_tags: [],
+      optional_tags: [0, -1]
     }
 
-    {:ok, user} = OntagCore.Accounts.create_user(user_params)
-    cms_author = OntagCore.CMS.ensure_author_exists(user)
-    {:ok, entry} = OntagCore.CMS.create_entry(cms_author, entry_params)
-    author = QAMS.ensure_author_exists(user)
-    tag_params = %{
-      title: "Hello World"
-    }
+    {:error, _} = QAMS.create_question(author, question_params)
+  end
 
-    {:ok, tag} = QAMS.create_tag(author, tag_params)
+  test "Get a list of all questions" do
+    assert [_, _] = QAMS.list_questions
+  end
 
+  test "Get a question", %{question: question} do
+    question = Repo.preload(question, :tags)
+    assert {:ok, question} == QAMS.get_question(question.id)
+  end
+
+  test "Delete a question", %{question: question} do
+    question = Repo.preload(question, :tags)
+    assert {:ok, _} = QAMS.delete_question(question.id)
+  end
+
+  test "Create an annotation", %{author: author, entry: entry, tags: [tag1, _, _]}  do
     params = %{
-      target: %{
-        type: "type of the annotation"
-      }
+      tag_id: tag1.id,
+      entry_id: entry.id,
+      target: %{}
     }
 
-    assert {:ok, _annotation} = QAMS.create_annotation(author, entry, tag, params)
+    assert {:ok, _} = QAMS.create_annotation(author, params)
+  end
+
+  test "Get a list of all annotations" do
+    assert [_] = QAMS.list_annotations()
+  end
+
+  test "Get an annotation", %{annotation: annotation} do
+    assert {:ok, _} = QAMS.get_annotation(annotation.id)
+  end
+
+  test "Get a non-existent annotation" do
+    assert {:error, :not_found} == QAMS.get_annotation(0)
+  end
+
+  test "Delete an annotation", %{annotation: annotation} do
+    assert {:ok, _} = QAMS.delete_annotation(annotation.id)
+  end
+
+  test "Delete an annotation used in an answer", %{annotation: annotation, question: question} do
+    answer = create_test_answer(question)
+    create_test_answer_annotation(answer, annotation)
+
+    assert {:ok, _} = QAMS.delete_annotation(annotation.id)
+  end
+
+  test "Create an answer", %{author: author, question: question, annotation: annotation} do
+    params = %{
+      question_id: question.id,
+      annotations: [annotation.id]
+    }
+    assert {:ok, _} = QAMS.create_answer(author, params)
+  end
+
+  test "Get an answer", %{answer: answer} do
+    assert {:ok, _} = QAMS.get_answer(answer.id)
+  end
+
+  test "Get a non-existent answer" do
+    assert {:error, :not_found} == QAMS.get_answer(0)
+  end
+
+  test "Delete an answer", %{answer: answer} do
+    assert {:ok, _} = QAMS.delete_answer(answer.id)
+  end
+
+  test "Delete a non-existent answer" do
+    assert {:error, :not_found} == QAMS.delete_answer(0)
   end
 end

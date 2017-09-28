@@ -19,7 +19,7 @@ defmodule OntagCore.QAMS.Annotation do
 
   def changeset(%Annotation{} = annotation, attrs) do
     annotation
-    |> cast(attrs, [:target])
-    |> validate_required([:target])
+    |> cast(attrs, [:target, :entry_id, :tag_id])
+    |> validate_required([:target, :entry_id, :tag_id])
   end
 end
