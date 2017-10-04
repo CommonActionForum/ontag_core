@@ -153,7 +153,25 @@ defmodule OntagCore.QAMS do
       nil ->
         {:error, :not_found}
       question ->
-        question = Repo.preload(question, :tags)
+        question_tags =
+          Repo.all(QuestionTag, question_id: question.id)
+          |> Repo.preload(:tag)
+
+        rt =
+          question_tags
+          |> Enum.filter(fn qt -> qt.required end)
+          |> Enum.map(fn qt -> qt.tag end)
+
+        ot =
+          question_tags
+          |> Enum.filter(fn qt -> !qt.required end)
+          |> Enum.map(fn qt -> qt.tag end)
+
+        question =
+          question
+          |> Map.put(:required_tags, rt)
+          |> Map.put(:optional_tags, ot)
+
         {:ok, question}
     end
   end

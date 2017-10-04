@@ -27,9 +27,21 @@ defmodule OntagCoreWeb.QuestionController do
 
   def show(conn, %{"id" => id}) do
     with {:ok, question} <- QAMS.get_question(id) do
+      ot =
+        question.optional_tags
+        |> Enum.map(fn t -> %{title: t.title, id: t.id} end)
+
+      rt =
+        question.required_tags
+        |> Enum.map(fn t -> %{title: t.title, id: t.id} end)
+
       conn
       |> put_status(:ok)
-      |> json(%{id: question.id, title: question.title})
+      |> json(%{
+            id: question.id,
+            title: question.title,
+            required_tags: rt,
+            optional_tags: ot})
     end
   end
 
