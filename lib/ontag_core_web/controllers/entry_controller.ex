@@ -30,9 +30,11 @@ defmodule OntagCoreWeb.EntryController do
 
   def show(conn, %{"id" => id}) do
     with {:ok, entry} <- CMS.get_entry(id) do
+      entry = take(entry)
+
       conn
       |> put_status(:ok)
-      |> json(%{id: entry.id, title: entry.title})
+      |> json(entry)
     end
   end
 
