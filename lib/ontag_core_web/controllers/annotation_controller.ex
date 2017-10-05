@@ -18,7 +18,10 @@ defmodule OntagCoreWeb.AnnotationController do
   def index(conn, _) do
     annotations =
       QAMS.list_annotations()
-      |> Enum.map(fn annotation -> %{id: annotation.id} end)
+      |> Enum.map(fn annotation -> %{id: annotation.id,
+                                     target: annotation.target,
+                                     tag_id: annotation.tag_id,
+                                     entry_id: annotation.entry_id} end)
 
     conn
     |> put_status(:ok)
@@ -29,7 +32,10 @@ defmodule OntagCoreWeb.AnnotationController do
     with {:ok, annotation} <- QAMS.get_annotation(id) do
       conn
       |> put_status(:ok)
-      |> json(%{id: annotation.id})
+      |> json(%{id: annotation.id,
+                target: annotation.target,
+                tag_id: annotation.tag_id,
+                entry_id: annotation.entry_id})
     end
   end
 
