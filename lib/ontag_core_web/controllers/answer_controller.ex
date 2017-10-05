@@ -1,6 +1,7 @@
 defmodule OntagCoreWeb.AnswerController do
   use OntagCoreWeb, :controller
   alias OntagCore.QAMS
+  alias OntagCore.Repo
 
   plug OntagCoreWeb.Authentication when action in [:create]
   action_fallback OntagCoreWeb.FallbackController
@@ -11,14 +12,18 @@ defmodule OntagCoreWeb.AnswerController do
     with {:ok, answer} <- QAMS.create_answer(author, params) do
       conn
       |> put_status(:created)
-      |> json(%{id: answer.id})
+      |> json(%{id: answer.id,
+                question_id: answer.question_id})
     end
   end
 
   def index(conn, _) do
     answers =
       QAMS.list_answers()
-      |> Enum.map(fn answer -> %{id: answer.id} end)
+      |> Repo.preload(:annotations)
+      |> Enum.map(fn answer -> %{id: answer.id,
+                                 question_id: answer.question_id,
+                                 annotations: take(answer.annotations)} end)
 
     conn
     |> put_status(:ok)
@@ -39,5 +44,12 @@ defmodule OntagCoreWeb.AnswerController do
       |> put_status(:ok)
       |> json(%{message: "Tag successfully deleted"})
     end
+  end
+
+  defp take(annotations) do
+    Enum.map(annotations, fn a -> %{id: a.id,
+                                    tag_id: a.tag_id,
+                                    entry_id: a.entry_id,
+                                    target: a.target} end)
   end
 end
