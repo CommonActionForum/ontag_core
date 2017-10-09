@@ -30,6 +30,9 @@ defmodule OntagCoreWeb.Router do
     resources "/tags", TagController, only: [:create, :index, :show, :delete, :update]
     resources "/questions", QuestionController, only: [:create, :index, :show, :delete]
     resources "/annotations", AnnotationController, only: [:create, :index, :show, :delete]
-    resources "/answers", AnswerController, only: [:create, :index, :show, :delete]
+    resources "/answers", AnswerController, only: [:create, :index, :show, :delete] do
+      post "/add_annotation", AnswerController, :add_annotation
+      post "/remove_annotation", AnswerController, :remove_annotation
+    end
   end
 end

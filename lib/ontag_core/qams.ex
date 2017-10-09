@@ -301,6 +301,28 @@ defmodule OntagCore.QAMS do
     end
   end
 
+  def add_annotation_to_answer(author, id, annotation_id) do
+    with {:ok, answer} <- get_answer(id) do
+      params = %{annotation_id: annotation_id, answer_id: id}
+
+      %AnswerAnnotation{}
+      |> AnswerAnnotation.changeset(params)
+      |> put_change(:author_id, author.id)
+      |> Repo.insert()
+    end
+  end
+
+  def remove_annotation_from_answer(id, annotation_id) do
+    with {:ok, answer} <- get_answer(id) do
+      case Repo.get_by(AnswerAnnotation, annotation_id: annotation_id, answer_id: id) do
+        nil ->
+          {:error, :bad_request}
+        aa ->
+          Repo.delete(aa)
+      end
+    end
+  end
+
   def ensure_author_exists(%Accounts.User{} = user) do
     %Author{user_id: user.id}
     |> Ecto.Changeset.change()

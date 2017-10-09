@@ -3,7 +3,7 @@ defmodule OntagCoreWeb.AnswerController do
   alias OntagCore.QAMS
   alias OntagCore.Repo
 
-  plug OntagCoreWeb.Authentication when action in [:create]
+  plug OntagCoreWeb.Authentication when action in [:create, :add_annotation, :remove_annotation]
   action_fallback OntagCoreWeb.FallbackController
 
   def create(conn, params) do
@@ -45,6 +45,27 @@ defmodule OntagCoreWeb.AnswerController do
       |> json(%{message: "Tag successfully deleted"})
     end
   end
+
+  def add_annotation(conn, %{"answer_id" => id, "annotation_id" => annotation_id}) do
+    author = QAMS.ensure_author_exists(conn.assigns[:current_user])
+
+    with {:ok, _} <- QAMS.add_annotation_to_answer(author, id, annotation_id) do
+      conn
+      |> put_status(:ok)
+      |> json(%{message: "Annotation successfully added"})
+    end
+  end
+
+  def remove_annotation(conn, %{"answer_id" => id, "annotation_id" => annotation_id}) do
+    author = QAMS.ensure_author_exists(conn.assigns[:current_user])
+
+    with {:ok, _} <- QAMS.remove_annotation_from_answer(id, annotation_id) do
+      conn
+      |> put_status(:ok)
+      |> json(%{message: "Annotation successfully removed"})
+    end
+  end
+
 
   defp take(annotations) do
     Enum.map(annotations, fn a -> %{id: a.id,
