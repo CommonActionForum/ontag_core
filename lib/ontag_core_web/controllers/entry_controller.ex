@@ -61,6 +61,9 @@ defmodule OntagCoreWeb.EntryController do
 
         "external_html" ->
           %{}
+
+        _ ->
+          %{}
       end
 
     Map.merge(base, extra)
