@@ -110,8 +110,17 @@ defmodule OntagCore.QAMSTest do
   end
 
   test "Get a question", %{question: question} do
-    question = Repo.preload(question, :tags)
-    assert {:ok, question} == QAMS.get_question(question.id)
+    question_with_tags = Repo.preload(question, :tags)
+    expected =
+      question
+      |> Map.drop([:tags, :required_tags, :optional_tags])
+
+    {:ok, question2} = QAMS.get_question(question.id)
+    result =
+      question2
+      |> Map.drop([:tags, :required_tags, :optional_tags])
+
+    assert expected == result
   end
 
   test "Delete a question", %{question: question} do
